@@ -1,0 +1,17 @@
+*.pyc
+*~
+.idea
+.coverage
+.tox
+.DS_Store
+pika.iml
+codegen
+pika.egg-info
+examples/pika
+examples/blocking/pika
+atlassian*xml
+build
+dist
+docs/_build
+*.conf.in
+.python-version 
