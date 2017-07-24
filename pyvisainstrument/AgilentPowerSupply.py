@@ -1,5 +1,5 @@
 
-from GPIBLink import GPIBLinkResource
+from pyvisainstrument.GPIBLink import GPIBLinkResource
 
 
 class AgilentPowerSupply(GPIBLinkResource):

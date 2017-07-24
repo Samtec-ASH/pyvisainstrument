@@ -1,6 +1,6 @@
 import time
 import numpy as np
-from GPIBLink import GPIBLinkResource
+from pyvisainstrument.GPIBLink import GPIBLinkResource
 
 
 class AgilentVNA(GPIBLinkResource):

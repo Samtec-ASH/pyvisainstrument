@@ -1,6 +1,6 @@
 
 import time
-from GPIBLink import GPIBLinkResource
+from pyvisainstrument.GPIBLink import GPIBLinkResource
 
 
 class SwitchMainFrame(GPIBLinkResource):
