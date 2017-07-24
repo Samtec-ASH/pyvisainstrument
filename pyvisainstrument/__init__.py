@@ -1,5 +1,5 @@
 __version__ = '0.8.0'
 
-from AgilentPowerSupply import AgilentPowerSupply
-from AgilentVNA import AgilentVNA
-from SwitchMainFrame import SwitchMainFrame
+from pyvisainstrument.AgilentPowerSupply import AgilentPowerSupply
+from pyvisainstrument.AgilentVNA import AgilentVNA
+from pyvisainstrument.SwitchMainFrame import SwitchMainFrame
