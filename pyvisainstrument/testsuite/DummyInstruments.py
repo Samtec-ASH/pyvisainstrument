@@ -251,7 +251,7 @@ class DummyVNA(DummyTCPInstrument):
     def __init__(self, *args, **kwargs):
         super(DummyVNA, self).__init__(*args, **kwargs)
         self.state = {
-            "*IDN": "DAQ",
+            "*IDN": "VNA",
             "*OPC": "1",
             "SENS1": {
                 "FREQ": {
@@ -323,7 +323,10 @@ class DummyVNA(DummyTCPInstrument):
         }
 
     def _getData(self, params):
+        isComplex = len(params) and (params[0] == "RDATA")
         numPoints = int(self.state["SENS1"]["SWEE"]["POIN"])
+        if isComplex:
+            numPoints = 2*numPoints
         data = np.random.rand(numPoints)
         dataStr = ",".join('{:+.6E}'.format(v) for v in data)
         return dataStr

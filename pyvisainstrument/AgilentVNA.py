@@ -152,7 +152,7 @@ class AgilentVNA(GPIBLinkResource):
 
         self._writeSCPI("TRIG:SOUR IMMediate")
 
-    def captureS4PTrace(self):
+    def captureS4PTrace(self, dtype=float):
 
         # Trigger trace and wait.
         isRunning = True
@@ -162,10 +162,12 @@ class AgilentVNA(GPIBLinkResource):
             time.sleep(0.01)
 
         s4Dict = dict(sdd11=None, sdd12=None, sdd21=None, sdd22=None)
+        dtypeName = "RDATA" if dtype == complex else "FDATA"
+        dataQuery = str.format("CALC1:DATA? {:s}", dtypeName)
         for s4Name in s4Dict.keys():
             cmd = str.format("CALC1:PAR:SEL '{:s}'", s4Name)
             self._writeSCPI(cmd)
-            s4Dict[s4Name] = self.resource.query_ascii_values("CALC1:DATA? FDATA", container=np.array).squeeze()
+            s4Dict[s4Name] = self.resource.query_ascii_values(dataQuery, container=np.array).squeeze()
 
         # Combine into 2x2xNUM_POINTS tensor
         s4Data = np.zeros((2, 2, s4Dict['sdd11'].size))
