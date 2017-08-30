@@ -8,10 +8,12 @@ class AgilentPowerSupply(GPIBLinkResource):
         """Initialize Agilint Power Supply."""
         super(AgilentPowerSupply, self).__init__(busAddress=busLinkAddress)
 
-    def open(self, termChar='\n'):
+    def open(self, termChar='\n', baudRate=None):
         super(AgilentPowerSupply, self).open()
-        if termChar is not None:
+        if termChar:
             self.resource.read_termination = termChar
+        if baudRate:
+            self.resource.baud_rate = baudRate
 
     def close(self):
         super(AgilentPowerSupply, self).close()

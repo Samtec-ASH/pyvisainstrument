@@ -15,9 +15,9 @@ class SwitchMainFrame(GPIBLinkResource):
 
     def open(self, baudRate=115200, termChar=None):
         super(SwitchMainFrame, self).open()
-        if baudRate is not None:
+        if baudRate:
             self.resource.baud_rate = baudRate
-        if termChar is not None:
+        if termChar:
             self.resource.read_termination = termChar
 
     def close(self):
@@ -27,12 +27,12 @@ class SwitchMainFrame(GPIBLinkResource):
         return str(self._querySCPI("*IDN?"))
 
     def openAllChannels(self, slotIdx):
-        cmd = str.format("ROUT:OPEN (@{:d}{:02d}:{:d}{:02d})",
-                         slotIdx,
-                         1,
-                         slotIdx,
-                         self.numChannels)
-        self._writeSCPI(cmd)
+        for i in range(self.numChannels):
+            self.openChannels([str.format("{:d}{:02d}", slotIdx, i+1)])
+
+    def closeAllChannels(self, slotIdx):
+        for i in range(self.numChannels):
+            self.closeChannels([str.format("{:d}{:02d}", slotIdx, i+1)])
 
     def openChannels(self, channels):
         chStr = ','.join([str.format("{:03d}", int(ch)) for ch in channels])

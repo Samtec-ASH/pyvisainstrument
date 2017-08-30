@@ -14,7 +14,7 @@ class AgilentVNA(GPIBLinkResource):
     def open(self, termChar='\n'):
         """Open resouce link for communication."""
         super(AgilentVNA, self).open()
-        if termChar is not None:
+        if termChar:
             self.resource.read_termination = termChar
 
     def close(self):
@@ -178,7 +178,7 @@ class AgilentVNA(GPIBLinkResource):
         return s4Data
 
     def setupECalibration(self, channel, startFreq, stopFreq, numPoints, sweepType):
-
+        """ Perform 4-port calibration w/ 2-port e-cal module (N4692-60001 ECal 13226)."""
         self.setupSweep(channel, startFreq, stopFreq, numPoints, sweepType)
 
         cmd = "sens1:corr:coll:guid:conn:port"
@@ -201,12 +201,15 @@ class AgilentVNA(GPIBLinkResource):
         self._writeSCPI("sens1:corr:coll:guid:init")
 
     def getNumberECalibrationSteps(self):
+        """ Must call setupECalibration() before calling this. """
         return int(self._querySCPI("sens1:corr:coll:guid:steps?"))
 
     def getECalibrationStepDescription(self, step):
+        """ Must call setupECalibration() before calling this. """
         return self._querySCPI(str.format("sens1:corr:coll:guid:desc? {:d}", step+1))
 
     def performECalibrationStep(self, step, save=True):
+        """ Must call setupECalibration() before calling this. """
         if step >= self.getNumberECalibrationSteps():
             return
         self._writeSCPI(str.format("sens1:corr:coll:guid:acq STAN{:d}", step+1))
@@ -215,6 +218,12 @@ class AgilentVNA(GPIBLinkResource):
             self._writeSCPI("sens1:corr:coll:guid:save")
 
     def performECalibrationSteps(self):
+        """ This performs all steps as an iterator.
+        Must call setupECalibration() before calling this.
+        >>> vna.setupECalibration(...)
+        >>> for stepDescription in vna.performECalibrationSteps():
+        >>>     print(stepDescription)
+        """
         numSteps = self.getNumberECalibrationSteps()
         i = 0
         while i < numSteps:
@@ -225,9 +234,7 @@ class AgilentVNA(GPIBLinkResource):
 
 
 if __name__ == '__main__':
-
     print("Starting")
-
     vna = AgilentVNA("TCPIP::127.0.0.1::5020::SOCKET")
     vna.open(termChar='\n')
     print(vna.getID())
@@ -235,8 +242,4 @@ if __name__ == '__main__':
     vna.setupS4PTraces()
     print(vna.captureS4PTrace())
     vna.close()
-    del vna
-    #vna.query()
-    #vna.setupSweep(10000000, 100000000, 100)
-
     print("Finished")

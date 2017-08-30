@@ -3,7 +3,7 @@ import time
 
 
 class GPIBLinkResource(object):
-
+    """Base class for GPIB-based instruments."""
     def __init__(self, busAddress, delay=15E-3):
         self.busAddress = busAddress
         self.resource = None
