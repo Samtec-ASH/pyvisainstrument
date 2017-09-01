@@ -323,7 +323,7 @@ class DummyVNA(DummyTCPInstrument):
         }
 
     def _getData(self, params):
-        isComplex = len(params) and (params[0] == "RDATA")
+        isComplex = len(params) and (params[0] in ["RDATA", "SDATA"])
         numPoints = int(self.state["SENS1"]["SWEE"]["POIN"])
         if isComplex:
             numPoints = 2*numPoints

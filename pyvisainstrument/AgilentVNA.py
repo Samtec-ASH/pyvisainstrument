@@ -162,15 +162,19 @@ class AgilentVNA(GPIBLinkResource):
             time.sleep(0.01)
 
         s4Dict = dict(sdd11=None, sdd12=None, sdd21=None, sdd22=None)
-        dtypeName = "RDATA" if dtype == complex else "FDATA"
+        dtypeName = "SDATA" if dtype == complex else "FDATA"
         dataQuery = str.format("CALC1:DATA? {:s}", dtypeName)
         for s4Name in s4Dict.keys():
             cmd = str.format("CALC1:PAR:SEL '{:s}'", s4Name)
             self._writeSCPI(cmd)
-            s4Dict[s4Name] = self.resource.query_ascii_values(dataQuery, container=np.array).squeeze()
+            data = self.resource.query_ascii_values(dataQuery, container=np.array).squeeze()
+            # Complex is returned as alternating real,imag,...
+            if dtype == complex:
+                data = data.view(dtype=complex)
+            s4Dict[s4Name] = data
 
         # Combine into 2x2xNUM_POINTS tensor
-        s4Data = np.zeros((2, 2, s4Dict['sdd11'].size))
+        s4Data = np.zeros((2, 2, s4Dict['sdd11'].size), dtype=dtype)
         s4Data[0, 0] = s4Dict['sdd11']
         s4Data[0, 1] = s4Dict['sdd12']
         s4Data[1, 0] = s4Dict['sdd21']
