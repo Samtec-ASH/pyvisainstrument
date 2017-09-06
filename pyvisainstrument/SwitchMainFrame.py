@@ -28,20 +28,28 @@ class SwitchMainFrame(GPIBLinkResource):
 
     def openAllChannels(self, slotIdx):
         for i in range(self.numChannels):
-            self.openChannels([str.format("{:d}{:02d}", slotIdx, i+1)])
+            chIdx = 100*slotIdx + (i+1);
+            self.openChannel(chIdx);
 
     def closeAllChannels(self, slotIdx):
         for i in range(self.numChannels):
-            self.closeChannels([str.format("{:d}{:02d}", slotIdx, i+1)])
+            chIdx = 100*slotIdx + (i+1);
+            self.closeChannel(chIdx);
 
     def openChannels(self, channels):
-        chStr = ','.join([str.format("{:03d}", int(ch)) for ch in channels])
-        cmd = str.format("ROUT:OPEN (@{:s})", chStr)
-        self._writeSCPI(cmd)
+        for ch in channels:
+            self.openChannel(ch)
 
     def closeChannels(self, channels):
-        chStr = ','.join([str.format("{:03d}", int(ch)) for ch in channels])
-        cmd = str.format("ROUT:CLOS (@{:s})", chStr)
+        for ch in channels:
+            self.closeChannel(ch)
+
+    def openChannel(self, channel):
+        cmd = str.format("ROUTE:OPEN (@{:03d})", channel)
+        self._writeSCPI(cmd)
+
+    def closeChannel(self, channel):
+        cmd = str.format("ROUTE:CLOS (@{:03d})", channel)
         self._writeSCPI(cmd)
 
     def _waitForCompletion(self, timeout=5):
