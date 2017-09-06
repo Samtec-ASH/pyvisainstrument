@@ -45,11 +45,11 @@ class SwitchMainFrame(GPIBLinkResource):
             self.closeChannel(ch)
 
     def openChannel(self, channel):
-        cmd = str.format("ROUTE:OPEN (@{:03d})", channel)
+        cmd = str.format("ROUT:OPEN (@{:03d})", channel)
         self._writeSCPI(cmd)
 
     def closeChannel(self, channel):
-        cmd = str.format("ROUTE:CLOS (@{:03d})", channel)
+        cmd = str.format("ROUT:CLOS (@{:03d})", channel)
         self._writeSCPI(cmd)
 
     def _waitForCompletion(self, timeout=5):
