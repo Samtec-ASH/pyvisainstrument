@@ -34,3 +34,18 @@ class GPIBLinkResource(object):
         if not self.isOpen:
             raise Exception("GPIBLinkResource not open")
         return self.resource.read(delay=self.delay)
+
+    @staticmethod
+    def GetSerialBusAddress(deviceID, baudRate=None, termChar=None):
+        asrlInstrs = visa.ResourceManager().list_resources('ASRL?*::INSTR')
+        for addr in asrlInstrs:
+            inst = visa.ResourceManager().open_resource(addr)
+            if baudRate:
+                inst.baud_rate = baudRate
+            if termChar:
+                inst.read_termination = termChar
+            instID = inst.query("*IDN?")
+            inst.close()
+            if deviceID in instID:
+                return addr
+        return None
