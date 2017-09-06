@@ -39,13 +39,17 @@ class GPIBLinkResource(object):
     def GetSerialBusAddress(deviceID, baudRate=None, termChar=None):
         asrlInstrs = visa.ResourceManager().list_resources('ASRL?*::INSTR')
         for addr in asrlInstrs:
-            inst = visa.ResourceManager().open_resource(addr)
-            if baudRate:
-                inst.baud_rate = baudRate
-            if termChar:
-                inst.read_termination = termChar
-            instID = inst.query("*IDN?")
-            inst.close()
-            if deviceID in instID:
-                return addr
+            inst = None
+            try:
+                inst = visa.ResourceManager().open_resource(addr, open_timeout=2)
+                if baudRate:
+                    inst.baud_rate = baudRate
+                if termChar:
+                    inst.read_termination = termChar
+                instID = inst.query("*IDN?")
+                inst.close()
+                if deviceID in instID:
+                    return addr
+            except Exception as err:
+                continue
         return None
