@@ -71,7 +71,7 @@ class SwitchMainFrame(GPIBLinkResource):
     def _writeSCPI(self, scpiStr):
         print(str.format("DAQ.write({:s})", scpiStr))
         self.write(scpiStr)
-        self._waitForCompletion()
+        # self._waitForCompletion()
 
     def _querySCPI(self, scpiStr):
         attempts = 0
