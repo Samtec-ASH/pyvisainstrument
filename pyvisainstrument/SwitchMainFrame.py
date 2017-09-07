@@ -80,7 +80,7 @@ class SwitchMainFrame(GPIBLinkResource):
             except Exception as err:
                 attempts = attempts + 1
                 if "Timeout" in str(err):
-                    self._writeSCPI("*CLS")
+                    self.write("*CLS")
                 if attempts > 4:
                     traceback.print_exc(file=sys.stdout)
                     raise err
