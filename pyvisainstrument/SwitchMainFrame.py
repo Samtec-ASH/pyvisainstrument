@@ -71,14 +71,14 @@ class SwitchMainFrame(GPIBLinkResource):
     def _querySCPI(self, scpiStr):
         attempts = 0
         while True:
-        try:
-            print(str.format("DAQ.query({:s})", scpiStr))
-            self.query(scpiStr)
-            return
-        except Exception as err:
-            attempts = attempts + 1
-            if (attempts > 3) or "Timeout" not in str(err):
-                raise err            
+            try:
+                print(str.format("DAQ.query({:s})", scpiStr))
+                self.query(scpiStr)
+                return
+            except Exception as err:
+                attempts = attempts + 1
+                if (attempts > 3) or "Timeout" not in str(err):
+                    raise err
 
 
 if __name__ == '__main__':
