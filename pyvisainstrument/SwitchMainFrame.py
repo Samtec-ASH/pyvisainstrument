@@ -14,7 +14,7 @@ class SwitchMainFrame(GPIBLinkResource):
         self.resourceLink = None
         self.numSlots = numSlots
         self.numChannels = numChannels
-        self.delay = 50e-3
+        self.delay = 30e-3
 
     def open(self, baudRate=115200, readTerm=None, writeTerm=None):
         super(SwitchMainFrame, self).open()
@@ -23,7 +23,7 @@ class SwitchMainFrame(GPIBLinkResource):
         if readTerm:
             self.resource.read_termination = readTerm
         if writeTerm:
-            self.resource.write_termination = writeTerm    
+            self.resource.write_termination = writeTerm
 
     def close(self):
         super(SwitchMainFrame, self).close()
@@ -50,12 +50,12 @@ class SwitchMainFrame(GPIBLinkResource):
             self.closeChannel(ch)
 
     def openChannel(self, channel):
-        cmd = str.format("ROUT:OPEN (@{:03d})", channel)
-        self._writeSCPI(cmd)
+        cmd = str.format("ROUT:OPEN (@{:03d});*OPC?", channel)
+        self._querySCPI(cmd)
 
     def closeChannel(self, channel):
-        cmd = str.format("ROUT:CLOS (@{:03d})", channel)
-        self._writeSCPI(cmd)
+        cmd = str.format("ROUT:CLOS (@{:03d});*OPC?", channel)
+        self._querySCPI(cmd)
 
     def _waitForCompletion(self, timeout=5):
         done = False
