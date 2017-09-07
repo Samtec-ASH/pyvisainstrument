@@ -16,12 +16,14 @@ class SwitchMainFrame(GPIBLinkResource):
         self.numChannels = numChannels
         self.delay = 50e-3
 
-    def open(self, baudRate=115200, termChar=None):
+    def open(self, baudRate=115200, readTerm=None, writeTerm=None):
         super(SwitchMainFrame, self).open()
         if baudRate:
             self.resource.baud_rate = baudRate
-        if termChar:
-            self.resource.read_termination = termChar
+        if readTerm:
+            self.resource.read_termination = readTerm
+        if writeTerm:
+            self.resource.write_termination = writeTerm    
 
     def close(self):
         super(SwitchMainFrame, self).close()
