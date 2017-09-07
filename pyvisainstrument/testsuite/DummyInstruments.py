@@ -253,14 +253,14 @@ class DummyVNA(DummyTCPInstrument):
         self.state = {
             "*IDN": "VNA",
             "*OPC": "1",
-            "SENS1": {
+            "SENSE": {
                 "FREQ": {
                     "STAR": "1E7",
                     "STOP": "1E9",
                     "CENT": "5E8",
                     "CW": "5E8"
                 },
-                "SWEE": {
+                "SWEEP": {
                     "POIN": "100",
                     "STEP": "100",
                     "TYPE": "LINEAR",
@@ -324,7 +324,7 @@ class DummyVNA(DummyTCPInstrument):
 
     def _getData(self, params):
         isComplex = len(params) and (params[0] in ["RDATA", "SDATA"])
-        numPoints = int(self.state["SENS1"]["SWEE"]["POIN"])
+        numPoints = int(self.state["SENS"]["SWEE"]["POIN"])
         if isComplex:
             numPoints = 2*numPoints
         data = np.random.rand(numPoints)
@@ -336,10 +336,11 @@ class DummyVNA(DummyTCPInstrument):
         prst = None
         pcmd = None
         for cmd in cmdTree:
-            if cmd in rst:
+            scmd = cmd[:5]
+            if scmd in rst:
                 prst = rst
-                pcmd = cmd
-                rst = rst[cmd]
+                pcmd = scmd
+                rst = rst[scmd]
             else:
                 break
 

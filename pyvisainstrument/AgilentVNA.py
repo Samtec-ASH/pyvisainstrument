@@ -31,80 +31,80 @@ class AgilentVNA(GPIBLinkResource):
         return self.query(scpiStr)
 
     def setStartFreq(self, channel, freq_hz):
-        cmd = str.format("SENS{:d}:FREQ:STAR {:.0f}", channel, freq_hz)
+        cmd = str.format("SENSE{:d}:FREQUENCY:START {:.0f}", channel, freq_hz)
         self._writeSCPI(cmd)
 
     def getStartFreq(self, channel):
-        cmd = str.format("SENS{:d}:FREQ:STAR?", channel)
+        cmd = str.format("SENSE{:d}:FREQUENCY:START?", channel)
         rst = float(self._querySCPI(cmd))
         return rst
 
     def setStopFreq(self, channel, freq_hz):
-        cmd = str.format("SENS{:d}:FREQ:STOP {:.0f}", channel, freq_hz)
+        cmd = str.format("SENSE{:d}:FREQUENCY:STOP {:.0f}", channel, freq_hz)
         self._writeSCPI(cmd)
 
     def getStopFreq(self, channel):
-        cmd = str.format("SENS{:d}:FREQ:STOP?", channel)
+        cmd = str.format("SENSE{:d}:FREQUENCY:STOP?", channel)
         rst = float(self._querySCPI(cmd))
         return rst
 
     def setCenterFreq(self, channel, freq_hz):
-        cmd = str.format("SENS{:d}:FREQ:CENT {:.0f}", channel, freq_hz)
+        cmd = str.format("SENSE{:d}:FREQUENCY:CENT {:.0f}", channel, freq_hz)
         self._writeSCPI(cmd)
 
     def getCenterFreq(self, channel):
-        cmd = str.format("SENS{:d}:FREQ:CENT?", channel)
+        cmd = str.format("SENSE{:d}:FREQUENCY:CENT?", channel)
         rst = float(self._querySCPI(cmd))
         return rst
 
     def setCWFreq(self, channel, freq_hz):
-        cmd = str.format("SENS{:d}:FREQ:CW {:.0f}", channel, freq_hz)
+        cmd = str.format("SENSE{:d}:FREQUENCY:CW {:.0f}", channel, freq_hz)
         self._writeSCPI(cmd)
 
     def getCWFreq(self, channel):
-        cmd = str.format("SENS{:d}:FREQ:CW?", channel)
+        cmd = str.format("SENSE{:d}:FREQUENCY:CW?", channel)
         rst = float(self._querySCPI(cmd))
         return rst
 
     def setNumberSweepPoints(self, channel, numPoints):
-        cmd = str.format("SENS{:d}:SWEE:POIN {:d}", channel, numPoints)
+        cmd = str.format("SENSE{:d}:SWEEP:POINTS {:d}", channel, numPoints)
         self._writeSCPI(cmd)
 
     def getNumberSweepPoints(self, channel):
-        cmd = str.format("SENS{:d}:SWEE:POIN?", channel)
+        cmd = str.format("SENSE{:d}:SWEEP:POINTS?", channel)
         rst = int(self._querySCPI(cmd))
         return rst
 
     def setFrequencyStepSize(self, channel, freq_hz):
-        cmd = str.format("SENS{:d}:SWEE:STEP {1:0.}", channel, freq_hz)
+        cmd = str.format("SENSE{:d}:SWEEP:STEP {1:0.}", channel, freq_hz)
         self._writeSCPI(cmd)
 
     def getFrequencyStepSize(self, channel):
-        cmd = str.format("SENS{:d}:SWEE:STEP?", channel)
+        cmd = str.format("SENSE{:d}:SWEEP:STEP?", channel)
         rst = float(self._querySCPI(cmd))
         return rst
 
     def setSweepType(self, channel, type):
         # Types = ["LINEAR", "LOGARITHMIC", "POWER", "CW", "SEGMENT", "PHASE"]
-        cmd = str.format("SENS{:d}:SWEE:TYPE {:s}", channel, type)
+        cmd = str.format("SENSE{:d}:SWEEP:TYPE {:s}", channel, type)
         self._writeSCPI(cmd)
 
     def getSweepType(self, channel):
-        cmd = str.format("SENS{:d}:SWEE:TYPE?", channel)
+        cmd = str.format("SENSE{:d}:SWEEP:TYPE?", channel)
         rst = str(self._querySCPI(cmd))
         return rst
 
     def setSweepPower(self, channel, power):
-        cmd = str.format("SENS{:d}:SWEE:POWE {:d}", channel, power)
+        cmd = str.format("SENSE{:d}:SWEEP:POWER {:d}", channel, power)
         self._writeSCPI(cmd)
 
     def getSweepPower(self, channel):
-        cmd = str.format("SENS{:d}:SWEE:POWE", channel)
+        cmd = str.format("SENSE{:d}:SWEEP:POWER", channel)
         rst = int(self._querySCPI(cmd))
         return rst
 
     def setCalibration(self, calStr, channel=1):
-        cmd = str.format("SENS{:d}:CORR:CSET:ACT '{:s}',1", channel, calStr)
+        cmd = str.format("SENSE{:d}:CORR:CSET:ACT '{:s}',1", channel, calStr)
         self._writeSCPI(cmd)
 
     def setupSweep(self, channel, startFreq, stopFreq, numPoints,
@@ -119,19 +119,19 @@ class AgilentVNA(GPIBLinkResource):
         self._writeSCPI("CALC1:PAR:DEL:ALL")
         self._writeSCPI("CALC1:FSIM:BAL:DEV BBALANCED")
         self._writeSCPI("CALC1:PAR:DEL:ALL")
-        self._writeSCPI("CALC1:FSIM:BAL:DEV BBALanced")
-        self._writeSCPI("CALC1:FSIM:BAL:TOP:BBAL:PPOR 1,3,2,4")
+        self._writeSCPI("CALC1:FSIM:BAL:DEV BBALANCED")
+        self._writeSCPI("CALC1:FSIM:BAL:TOP:BBAL:PPORTS 1,3,2,4")
 
         # Now create logical port 1 reflection parameters
         self._writeSCPI("CALC1:PAR:DEF 'sdd11',S11")
         self._writeSCPI("CALC1:PAR:SEL 'sdd11'")
-        self._writeSCPI("CALC1:FSIM:BAL:PAR:STAT ON")
+        self._writeSCPI("CALC1:FSIM:BAL:PAR:STATE ON")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:BBAL:DEF SDD11")
         self._writeSCPI("DISP:WIND1:TRAC1:FEED 'sdd11'")
         # Now create reverse transmission parameters
         self._writeSCPI("CALC1:PAR:DEF 'sdd12',S11")
         self._writeSCPI("CALC1:PAR:SEL 'sdd12'")
-        self._writeSCPI("CALC1:FSIM:BAL:PAR:STAT ON")
+        self._writeSCPI("CALC1:FSIM:BAL:PAR:STATE ON")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:BBAL:DEF SDD12")
         self._writeSCPI("DISP:WIND1:TRAC2:FEED 'sdd12'")
 
@@ -139,14 +139,14 @@ class AgilentVNA(GPIBLinkResource):
         # transformation and set the balanced transformation to BBAL SDD21.
         self._writeSCPI("CALC1:PAR:DEF 'sdd21',S11")
         self._writeSCPI("CALC1:PAR:SEL 'sdd21'")
-        self._writeSCPI("CALC1:FSIM:BAL:PAR:STAT ON")
+        self._writeSCPI("CALC1:FSIM:BAL:PAR:STATE ON")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:BBAL:DEF SDD21")
         self._writeSCPI("DISP:WIND1:TRAC3:FEED 'sdd21'")
 
         # Now create reverse reflection parameters
         self._writeSCPI("CALC1:PAR:DEF 'sdd22',S11")
         self._writeSCPI("CALC1:PAR:SEL 'sdd22'")
-        self._writeSCPI("CALC1:FSIM:BAL:PAR:STAT ON")
+        self._writeSCPI("CALC1:FSIM:BAL:PAR:STATE ON")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:BBAL:DEF SDD22")
         self._writeSCPI("DISP:WIND1:TRAC4:FEED 'sdd22'")
 
@@ -157,7 +157,7 @@ class AgilentVNA(GPIBLinkResource):
         # Trigger trace and wait.
         isRunning = True
         while isRunning:
-            msg = self._querySCPI("SENS1:SWEE:MODE SINGle;*OPC?")
+            msg = self._querySCPI("SENSE1:SWEEP:MODE SINGle;*OPC?")
             isRunning = (int(msg) == 0)
             time.sleep(0.01)
 
@@ -185,41 +185,54 @@ class AgilentVNA(GPIBLinkResource):
         """ Perform 4-port calibration w/ 2-port e-cal module (N4692-60001 ECal 13226)."""
         self.setupSweep(channel, startFreq, stopFreq, numPoints, sweepType)
 
-        cmd = "sens1:corr:coll:guid:conn:port"
+        cmd = "SENSE1:corr:coll:guid:conn:port"
         fport = "2.92 mm female"
         mport = "2.92 mm male"
         self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 1, fport))
         self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 2, mport))
-        self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 3, fport))
-        self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 4, mport))
+        # self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 3, fport))
+        # self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 4, mport))
 
-        cmd = "sens1:corr:coll:guid:ckit:port"
+        cmd = "SENSE1:corr:coll:guid:ckit:port"
         kit = "N4692-60001 ECal 13226"
         self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 1, kit))
         self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 2, kit))
-        self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 3, kit))
-        self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 4, kit))
+        # self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 3, kit))
+        # self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 4, kit))
 
-        self._writeSCPI("sens1:corr:pref:ecal:ori ON")
-        self._writeSCPI("sens1:corr:coll:guid:thru:ports 1,2,1,4,2,3")
-        self._writeSCPI("sens1:corr:coll:guid:init")
+        self._writeSCPI("SENSE1:corr:pref:ecal:ori ON")
+
+        '''
+        ' If your selected cal kit is not a 4-port ECal module which can
+        ' mate to all 4 ports at once, then you may want to choose which
+        ' thru connections to measure for the cal.  You must measure at
+        ' least 3 different thru paths for a 4-port cal (for greatest
+        ' accuracy you can choose to measure a thru connection for all 6
+        ' pairings of the 4 ports).  If you omit this command, the default
+        ' is to measure from port 1 to port 2, port 1 to port 3, and
+        ' port 1 to port 4.   For this example we select to measure
+        ' from port 1 to port 2, port 2 to port 3, and port 2 to port 4.
+        '''
+        # self._writeSCPI("SENSE1:corr:coll:guid:thru:ports 1,2,1,3,1,4")
+
+        self._writeSCPI("SENSE1:corr:coll:guid:init")
 
     def getNumberECalibrationSteps(self):
         """ Must call setupECalibration() before calling this. """
-        return int(self._querySCPI("sens1:corr:coll:guid:steps?"))
+        return int(self._querySCPI("SENSE1:corr:coll:guid:steps?"))
 
     def getECalibrationStepDescription(self, step):
         """ Must call setupECalibration() before calling this. """
-        return self._querySCPI(str.format("sens1:corr:coll:guid:desc? {:d}", step+1))
+        return self._querySCPI(str.format("SENSE1:corr:coll:guid:desc? {:d}", step+1))
 
     def performECalibrationStep(self, step, save=True):
         """ Must call setupECalibration() before calling this. """
         if step >= self.getNumberECalibrationSteps():
             return
-        self._writeSCPI(str.format("sens1:corr:coll:guid:acq STAN{:d}", step+1))
+        self._writeSCPI(str.format("SENSE1:corr:coll:guid:acq STAN{:d}", step+1))
         time.sleep(2)
         if step == (self.getNumberECalibrationSteps()-1):
-            self._writeSCPI("sens1:corr:coll:guid:save")
+            self._writeSCPI("SENSE1:corr:coll:guid:save")
 
     def performECalibrationSteps(self):
         """ This performs all steps as an iterator.
