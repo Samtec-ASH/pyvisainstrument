@@ -60,7 +60,8 @@ class SwitchMainFrame(GPIBLinkResource):
         waitTime = 0.0
         while not done:
             time.sleep(50E-3)
-            done = int(self._querySCPI("ROUT:DONE?"))
+            doneStr = self._querySCPI("ROUT:DONE?")
+            done = int(dontStr) if len(doneStr.strip()) else done
             waitTime += 50E-3
             if waitTime >= timeout:
                 raise Exception("waitForCompletion:timeout")
@@ -81,6 +82,8 @@ class SwitchMainFrame(GPIBLinkResource):
                 attempts = attempts + 1
                 if "Timeout" in str(err):
                     self.write("*CLS")
+                    self.resource.flush(1)
+                    self.write("*RST")
                 if attempts > 4:
                     traceback.print_exc(file=sys.stdout)
                     raise err
