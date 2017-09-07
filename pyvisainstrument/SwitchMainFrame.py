@@ -12,7 +12,7 @@ class SwitchMainFrame(GPIBLinkResource):
         self.resourceLink = None
         self.numSlots = numSlots
         self.numChannels = numChannels
-        self.delay = 100e-3
+        self.delay = 50e-3
 
     def open(self, baudRate=115200, termChar=None):
         super(SwitchMainFrame, self).open()
@@ -57,19 +57,19 @@ class SwitchMainFrame(GPIBLinkResource):
         done = False
         waitTime = 0.0
         while not done:
-            time.sleep(100E-3)
+            time.sleep(50E-3)
             done = int(self._querySCPI("ROUT:DONE?"))
-            waitTime += 100E-3
+            waitTime += 50E-3
             if waitTime >= timeout:
                 raise Exception("waitForCompletion:timeout")
 
     def _writeSCPI(self, scpiStr):
-        print(scpiStr)
+        print(str.format("DAQ.write({:s})", scpiStr))
         self.write(scpiStr)
         self._waitForCompletion()
 
     def _querySCPI(self, scpiStr):
-        print(scpiStr)
+        print(str.format("DAQ.query({:s})", scpiStr))
         return self.query(scpiStr)
 
 

@@ -25,9 +25,11 @@ class AgilentVNA(GPIBLinkResource):
         return str(self._querySCPI("*IDN?"))
 
     def _writeSCPI(self, scpiStr):
+        print(str.format("VNA.write({:s})", scpiStr))
         self.write(scpiStr)
 
     def _querySCPI(self, scpiStr):
+        print(str.format("VNA.query({:s})", scpiStr))
         return self.query(scpiStr)
 
     def setStartFreq(self, channel, freq_hz):
