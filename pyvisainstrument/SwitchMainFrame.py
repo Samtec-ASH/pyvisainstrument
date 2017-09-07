@@ -56,9 +56,9 @@ class SwitchMainFrame(GPIBLinkResource):
         done = False
         waitTime = 0.0
         while not done:
-            time.sleep(15E-3)
+            time.sleep(50E-3)
             done = int(self._querySCPI("ROUT:DONE?"))
-            waitTime += 15E-3
+            waitTime += 50E-3
             if waitTime >= timeout:
                 raise Exception("waitForCompletion:timeout")
 
