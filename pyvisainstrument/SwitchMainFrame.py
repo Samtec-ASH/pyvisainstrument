@@ -1,5 +1,7 @@
 
 import time
+import traceback
+import sys
 from pyvisainstrument.GPIBLink import GPIBLinkResource
 
 
@@ -77,7 +79,10 @@ class SwitchMainFrame(GPIBLinkResource):
                 return rst
             except Exception as err:
                 attempts = attempts + 1
-                if (attempts > 3) or "Timeout" not in str(err):
+                if "Timeout" in str(err):
+                    self._writeSCPI("*CLS")
+                if attempts > 4:
+                    traceback.print_exc(file=sys.stdout)
                     raise err
 
 
