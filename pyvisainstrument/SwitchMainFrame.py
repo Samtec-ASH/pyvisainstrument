@@ -14,7 +14,7 @@ class SwitchMainFrame(GPIBLinkResource):
         self.resourceLink = None
         self.numSlots = numSlots
         self.numChannels = numChannels
-        self.delay = 30e-3
+        self.delay = 100e-3
 
     def open(self, baudRate=115200, readTerm=None, writeTerm=None):
         super(SwitchMainFrame, self).open()
