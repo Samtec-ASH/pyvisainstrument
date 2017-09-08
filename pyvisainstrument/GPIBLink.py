@@ -4,7 +4,7 @@ import time
 
 class GPIBLinkResource(object):
     """Base class for GPIB-based instruments."""
-    def __init__(self, busAddress, delay=15E-3):
+    def __init__(self, busAddress, delay=35E-3):
         self.busAddress = busAddress
         self.resource = None
         self.isOpen = False
@@ -48,7 +48,7 @@ class GPIBLinkResource(object):
                     inst.read_termination = readTerm
                 if writeTerm:
                     inst.write_termination = writeTerm
-                    
+
                 instID = inst.query("*IDN?")
                 inst.close()
                 if deviceID in instID:
