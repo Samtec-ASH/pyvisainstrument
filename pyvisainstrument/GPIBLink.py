@@ -12,6 +12,8 @@ class GPIBLinkResource(object):
 
     def open(self):
         self.resource = visa.ResourceManager().open_resource(self.busAddress)
+        self.resource.clear()
+        self.resource.query_delay = self.delay
         self.isOpen = True
 
     def close(self):
@@ -29,10 +31,17 @@ class GPIBLinkResource(object):
         time.sleep(self.delay)
         self.resource.write(cmd)
 
-    def query(self, cmd):
+    def query(self, cmd, maxAttempts=3):
         if not self.isOpen:
             raise Exception("GPIBLinkResource not open")
-        return self.resource.query(cmd, delay=self.delay)
+        err = None
+        for attempts in range(maxAttempts):
+            try:
+                rst = self.resource.query(cmd, delay=self.delay)
+                return rst
+            except Exception as curErr:
+                err = curErr
+        raise err
 
     def read(self):
         if not self.isOpen:
@@ -55,9 +64,13 @@ class GPIBLinkResource(object):
                     inst.write_termination = writeTerm
                 inst.timeout = 2000
                 instID = inst.query("*IDN?", delay=100e-3)
+                inst.clear()
                 inst.close()
                 if deviceID in instID:
                     return addr
             except Exception as err:
+                if inst:
+                    inst.clear()
+                    inst.close()
                 continue
         return None
