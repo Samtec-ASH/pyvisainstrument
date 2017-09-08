@@ -38,6 +38,7 @@ class GPIBLinkResource(object):
     @staticmethod
     def GetSerialBusAddress(deviceID, baudRate=None, readTerm=None, writeTerm=None):
         asrlInstrs = visa.ResourceManager().list_resources('ASRL?*::INSTR')
+        print(asrlInstrs)
         for addr in asrlInstrs:
             inst = None
             try:
