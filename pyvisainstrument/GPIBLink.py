@@ -40,6 +40,7 @@ class GPIBLinkResource(object):
                 rst = self.resource.query(cmd, delay=self.delay)
                 return rst
             except Exception as curErr:
+                print(str.format('Query attempt {:d} failed.', attempts))
                 err = curErr
         raise err
 
