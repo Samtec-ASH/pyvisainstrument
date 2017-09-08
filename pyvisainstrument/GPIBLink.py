@@ -50,7 +50,7 @@ class GPIBLinkResource(object):
                 if writeTerm:
                     inst.write_termination = writeTerm
                 inst.timeout = 2000
-                instID = inst.query("*IDN?")
+                instID = inst.query("*IDN?", delay=100e-3)
                 inst.close()
                 if deviceID in instID:
                     return addr
