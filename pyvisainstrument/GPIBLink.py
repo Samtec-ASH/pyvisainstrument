@@ -11,7 +11,7 @@ class GPIBLinkResource(object):
         self.delay = delay
 
     def open(self):
-        self.resource = visa.ResourceManager().open_resource(self.busAddress)
+        self.resource = visa.ResourceManager('@py').open_resource(self.busAddress)
         self.isOpen = True
 
     def close(self):
