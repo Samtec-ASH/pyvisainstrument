@@ -79,6 +79,7 @@ class SwitchMainFrame(GPIBLinkResource):
             try:
                 print(str.format("DAQ.query({:s})", scpiStr))
                 rst = self.query(scpiStr)
+                print(str.format("DAQ.query({:s}) -> {:s}", scpiStr, rst))
                 return rst
             except Exception as err:
                 attempts = attempts + 1

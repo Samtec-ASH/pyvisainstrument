@@ -30,7 +30,9 @@ class AgilentVNA(GPIBLinkResource):
 
     def _querySCPI(self, scpiStr):
         print(str.format("VNA.query({:s})", scpiStr))
-        return self.query(scpiStr)
+        rst = self.query(scpiStr)
+        print(str.format("VNA.query({:s}) -> {:s}", scpiStr, rst))
+        return rst
 
     def setStartFreq(self, channel, freq_hz):
         cmd = str.format("SENSE{:d}:FREQUENCY:START {:.0f}", channel, freq_hz)

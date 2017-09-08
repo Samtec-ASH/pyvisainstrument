@@ -110,7 +110,9 @@ class AgilentPowerSupply(GPIBLinkResource):
 
     def _querySCPI(self, scpiStr):
         print(str.format("PS.query({:s})", scpiStr))
-        return self.query(scpiStr)
+        rst = self.query(scpiStr)
+        print(str.format("PS.query({:s}) -> {:s}", scpiStr, rst))
+        return rst
 
     def _writeSCPI(self, scpiStr):
         print(str.format("PS.write({:s})", scpiStr))
