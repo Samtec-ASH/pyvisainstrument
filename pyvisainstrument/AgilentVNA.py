@@ -233,7 +233,7 @@ class AgilentVNA(GPIBLinkResource):
         if step >= self.getNumberECalibrationSteps():
             return
         self._writeSCPI(str.format("SENSE1:corr:coll:guid:acq STAN{:d}", step+1))
-        time.sleep(2)
+        time.sleep(15)
         if step == (self.getNumberECalibrationSteps()-1):
             self._writeSCPI("SENSE1:corr:coll:guid:save")
 
