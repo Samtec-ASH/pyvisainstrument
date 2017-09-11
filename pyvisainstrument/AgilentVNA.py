@@ -193,12 +193,12 @@ class AgilentVNA(GPIBLinkResource):
         fport = "2.92 mm female"
         mport = "2.92 mm male"
         self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 1, fport))
-        self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 2, mport))
-        self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 3, mport))
-        self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 4, mport))
+        self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 2, fport))
+        self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 3, fport))
+        self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 4, fport))
 
         cmd = "SENSE1:corr:coll:guid:ckit:port"
-        kit = "N4692-60001 ECal 13226"
+        kit = "N4692-60003 ECal 13226"
         self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 1, kit))
         self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 2, kit))
         self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, 3, kit))
