@@ -124,6 +124,11 @@ class AgilentVNA(GPIBLinkResource):
         self._writeSCPI("CALC1:FSIM:BAL:DEV BBALANCED")
         self._writeSCPI("CALC1:PAR:DEL:ALL")
 
+        self._writeSCPI("DISP:WIND1:STATE ON")
+        self._writeSCPI("DISP:WIND2:STATE ON")
+        self._writeSCPI("DISP:WIND3:STATE ON")
+        self._writeSCPI("DISP:WIND4:STATE ON")
+
         # Now create logical port 1 reflection parameters
         self._writeSCPI("CALC1:PAR:DEF 'sdd11',S11")
         self._writeSCPI("CALC1:PAR:SEL 'sdd11'")
@@ -143,14 +148,14 @@ class AgilentVNA(GPIBLinkResource):
         self._writeSCPI("CALC1:PAR:SEL 'sdd21'")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:STATE ON")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:BBAL:DEF SDD21")
-        self._writeSCPI("DISP:WIND1:TRAC3:FEED 'sdd21'")
+        self._writeSCPI("DISP:WIND3:TRAC3:FEED 'sdd21'")
 
         # Now create reverse reflection parameters
         self._writeSCPI("CALC1:PAR:DEF 'sdd22',S11")
         self._writeSCPI("CALC1:PAR:SEL 'sdd22'")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:STATE ON")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:BBAL:DEF SDD22")
-        self._writeSCPI("DISP:WIND2:TRAC4:FEED 'sdd22'")
+        self._writeSCPI("DISP:WIND4:TRAC4:FEED 'sdd22'")
 
         self._writeSCPI("CALC1:FSIM:BAL:DEV BBALANCED")
         self._writeSCPI("CALC1:FSIM:BAL:TOP:BBAL:PPORTS 1,3,2,4")
