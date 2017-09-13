@@ -123,9 +123,6 @@ class AgilentVNA(GPIBLinkResource):
         self._writeSCPI("CALC1:PAR:DEL:ALL")
         self._writeSCPI("CALC1:FSIM:BAL:DEV BBALANCED")
         self._writeSCPI("CALC1:PAR:DEL:ALL")
-        self._writeSCPI("CALC1:FSIM:BAL:DEV BBALANCED")
-
-        self._writeSCPI("CALC1:FSIM:BAL:TOP:BBAL:PPORTS 1,2,3,4")
 
         # Now create logical port 1 reflection parameters
         self._writeSCPI("CALC1:PAR:DEF 'sdd11',S11")
@@ -138,7 +135,7 @@ class AgilentVNA(GPIBLinkResource):
         self._writeSCPI("CALC1:PAR:SEL 'sdd12'")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:STATE ON")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:BBAL:DEF SDD12")
-        self._writeSCPI("DISP:WIND1:TRAC2:FEED 'sdd12'")
+        self._writeSCPI("DISP:WIND2:TRAC2:FEED 'sdd12'")
 
         # Create a trace called "sdd21" and for that trace turn on the balanced
         # transformation and set the balanced transformation to BBAL SDD21.
@@ -153,7 +150,11 @@ class AgilentVNA(GPIBLinkResource):
         self._writeSCPI("CALC1:PAR:SEL 'sdd22'")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:STATE ON")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:BBAL:DEF SDD22")
-        self._writeSCPI("DISP:WIND1:TRAC4:FEED 'sdd22'")
+        self._writeSCPI("DISP:WIND2:TRAC4:FEED 'sdd22'")
+
+        self._writeSCPI("CALC1:FSIM:BAL:DEV BBALANCED")
+        self._writeSCPI("CALC1:FSIM:BAL:TOP:BBAL:PPORTS 1,3,2,4")
+
 
         self._writeSCPI("TRIG:SOUR IMMediate")
 
