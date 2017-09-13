@@ -124,7 +124,8 @@ class AgilentVNA(GPIBLinkResource):
         self._writeSCPI("CALC1:FSIM:BAL:DEV BBALANCED")
         self._writeSCPI("CALC1:PAR:DEL:ALL")
         self._writeSCPI("CALC1:FSIM:BAL:DEV BBALANCED")
-        self._writeSCPI("CALC1:FSIM:BAL:TOP:BBAL:PPORTS 1,3,2,4")
+
+        self._writeSCPI("CALC1:FSIM:BAL:TOP:BBAL:PPORTS 1,2,3,4")
 
         # Now create logical port 1 reflection parameters
         self._writeSCPI("CALC1:PAR:DEF 'sdd11',S11")
