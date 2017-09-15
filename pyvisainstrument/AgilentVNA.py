@@ -158,7 +158,7 @@ class AgilentVNA(GPIBLinkResource):
         self._writeSCPI("DISP:WIND4:TRAC4:FEED 'sdd22'")
 
         self._writeSCPI("CALC1:FSIM:BAL:DEV BBALANCED")
-        self._writeSCPI("CALC1:FSIM:BAL:TOP:BBAL:PPORTS 1,3,2,4")
+        self._writeSCPI("CALC1:FSIM:BAL:TOP:BBAL:PPORTS 1,2,3,4")
 
 
         self._writeSCPI("TRIG:SOUR IMMediate")
