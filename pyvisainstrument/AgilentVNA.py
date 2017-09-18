@@ -135,7 +135,7 @@ class AgilentVNA(GPIBLinkResource):
         self._writeSCPI("CALC1:FSIM:BAL:PAR:STATE ON")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:BBAL:DEF SDD11")
         self._writeSCPI("DISP:WIND1:TRAC1:FEED 'sdd11'")
-        self._writeSCPI("DISP:WIND1:Y:AUTO")
+        #self._writeSCPI("DISP:WIND1:Y:AUTO")
 
         # Now create reverse transmission parameters
         self._writeSCPI("CALC1:PAR:DEF 'sdd12',S11")
@@ -143,7 +143,7 @@ class AgilentVNA(GPIBLinkResource):
         self._writeSCPI("CALC1:FSIM:BAL:PAR:STATE ON")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:BBAL:DEF SDD12")
         self._writeSCPI("DISP:WIND2:TRAC2:FEED 'sdd12'")
-        self._writeSCPI("DISP:WIND2:Y:AUTO")
+        #self._writeSCPI("DISP:WIND2:Y:AUTO")
 
         # Create a trace called "sdd21" and for that trace turn on the balanced
         # transformation and set the balanced transformation to BBAL SDD21.
@@ -152,14 +152,14 @@ class AgilentVNA(GPIBLinkResource):
         self._writeSCPI("CALC1:FSIM:BAL:PAR:STATE ON")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:BBAL:DEF SDD21")
         self._writeSCPI("DISP:WIND3:TRAC3:FEED 'sdd21'")
-        self._writeSCPI("DISP:WIND3:Y:AUTO")
+        #self._writeSCPI("DISP:WIND3:Y:AUTO")
         # Now create reverse reflection parameters
         self._writeSCPI("CALC1:PAR:DEF 'sdd22',S11")
         self._writeSCPI("CALC1:PAR:SEL 'sdd22'")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:STATE ON")
         self._writeSCPI("CALC1:FSIM:BAL:PAR:BBAL:DEF SDD22")
         self._writeSCPI("DISP:WIND4:TRAC4:FEED 'sdd22'")
-        self._writeSCPI("DISP:WIND4:Y:AUTO")
+        #self._writeSCPI("DISP:WIND4:Y:AUTO")
 
         self._writeSCPI("CALC1:FSIM:BAL:DEV BBALANCED")
         self._writeSCPI("CALC1:FSIM:BAL:TOP:BBAL:PPORTS 1,2,3,4")
