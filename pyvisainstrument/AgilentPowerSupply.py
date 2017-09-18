@@ -38,6 +38,10 @@ class AgilentPowerSupply(GPIBLinkResource):
     def disable(self):
         self.setOutputState(False)
 
+    def apply(self, ch, volt, curr, precision=2):
+        cmd = str.format("APPL {0:s}, {1:0.{3}f}, {2:0.{3}f}", ch, volt, curr, precision)
+        self._writeSCPI(cmd)
+
     def setOutputState(self, state):
         cmd = "OUTP:STAT ON" if state else "OUTP:STAT OFF"
         self._writeSCPI(cmd)
