@@ -323,13 +323,16 @@ class DummyVNA(DummyTCPInstrument):
         }
 
     def _getData(self, params):
+        print("_getData 1")
         isComplex = len(params) and (params[0] in ["RDATA", "SDATA"])
+        print("_getData 2")
         numPoints = int(self.state["SENS"]["SWEE"]["POIN"])
         if isComplex:
             numPoints = 2*numPoints
+        print("_getData 3")
         data = np.random.rand(numPoints)
         dataStr = ",".join('{:+.6E}'.format(v) for v in data)
-        print("_getData")
+        print("_getData 4")
         return dataStr
 
     def processCommand(self, cmdTree, params, isQuery):
