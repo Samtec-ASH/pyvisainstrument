@@ -255,13 +255,13 @@ class DummyVNA(DummyTCPInstrument):
             "*OPC": "1",
             "SENSE": {
                 "FREQ": {
-                    "STAR": "1E7",
+                    "START": "1E7",
                     "STOP": "1E9",
                     "CENT": "5E8",
                     "CW": "5E8"
                 },
                 "SWEEP": {
-                    "POIN": "100",
+                    "POINTS": "100",
                     "STEP": "100",
                     "TYPE": "LINEAR",
                     "POWE": "10",
@@ -326,7 +326,7 @@ class DummyVNA(DummyTCPInstrument):
         print("_getData 1")
         isComplex = len(params) and (params[0] in ["RDATA", "SDATA"])
         print("_getData 2")
-        numPoints = int(self.state["SENS"]["SWEE"]["POIN"])
+        numPoints = int(self.state["SENSE"]["SWEEP"]["POINTS"])
         if isComplex:
             numPoints = 2*numPoints
         print("_getData 3")
