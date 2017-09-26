@@ -329,6 +329,7 @@ class DummyVNA(DummyTCPInstrument):
             numPoints = 2*numPoints
         data = np.random.rand(numPoints)
         dataStr = ",".join('{:+.6E}'.format(v) for v in data)
+        print("_getData")
         return dataStr
 
     def processCommand(self, cmdTree, params, isQuery):
@@ -350,6 +351,7 @@ class DummyVNA(DummyTCPInstrument):
             elif type(rst) is None:
                 return str("")
             elif callable(rst):
+                print("calling", rst)
                 return rst(params)
             else:
                 print("Unknown query")

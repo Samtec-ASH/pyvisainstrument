@@ -153,6 +153,7 @@ class AgilentVNA(GPIBLinkResource):
         self._writeSCPI("CALC1:FSIM:BAL:PAR:BBAL:DEF SDD21")
         self._writeSCPI("DISP:WIND3:TRAC3:FEED 'sdd21'")
         #self._writeSCPI("DISP:WIND3:Y:AUTO")
+        
         # Now create reverse reflection parameters
         self._writeSCPI("CALC1:PAR:DEF 'sdd22',S11")
         self._writeSCPI("CALC1:PAR:SEL 'sdd22'")
@@ -224,10 +225,9 @@ class AgilentVNA(GPIBLinkResource):
         ' accuracy you can choose to measure a thru connection for all 6
         ' pairings of the 4 ports).  If you omit this command, the default
         ' is to measure from port 1 to port 2, port 1 to port 3, and
-        ' port 1 to port 4.
+        ' port 1 to port 4. 1,3,1,4,2,4,2,3.
         '''
-        self._writeSCPI("SENSE1:corr:coll:guid:thru:ports 1,2,1,3,1,4")
-
+        self._writeSCPI("SENSE1:corr:coll:guid:thru:ports 1,3,1,4,2,4,2,3")
         self._writeSCPI("SENSE1:corr:coll:guid:init")
 
     def getNumberECalibrationSteps(self):
