@@ -1,6 +1,6 @@
 import visa
 import time
-
+import os
 
 class GPIBLinkResource(object):
     """Base class for GPIB-based instruments."""
@@ -9,9 +9,10 @@ class GPIBLinkResource(object):
         self.resource = None
         self.isOpen = False
         self.delay = delay
+        self.ni_backend = os.getenv('NI_VISA_PATH', '@ni')
 
     def open(self):
-        self.resource = visa.ResourceManager().open_resource(self.busAddress)
+        self.resource = visa.ResourceManager(self.ni_backend).open_resource(self.busAddress)
         self.resource.clear()
         self.resource.query_delay = self.delay
         self.isOpen = True
@@ -51,12 +52,13 @@ class GPIBLinkResource(object):
 
     @staticmethod
     def GetSerialBusAddress(deviceID, baudRate=None, readTerm=None, writeTerm=None):
-        asrlInstrs = visa.ResourceManager().list_resources('ASRL?*::INSTR')
+        ni_backend = os.getenv('NI_VISA_PATH', '@ni')
+        asrlInstrs = visa.ResourceManager(ni_backend).list_resources('ASRL?*::INSTR')
         print(asrlInstrs)
         for addr in asrlInstrs:
             inst = None
             try:
-                inst = visa.ResourceManager().open_resource(addr, open_timeout=2)
+                inst = visa.ResourceManager(ni_backend).open_resource(addr, open_timeout=2)
                 if baudRate:
                     inst.baud_rate = baudRate
                 if readTerm:
