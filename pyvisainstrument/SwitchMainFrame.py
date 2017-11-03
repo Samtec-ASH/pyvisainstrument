@@ -7,14 +7,14 @@ from pyvisainstrument.GPIBLink import GPIBLinkResource
 
 class SwitchMainFrame(GPIBLinkResource):
 
-    def __init__(self, busLinkAddress, numSlots, numChannels):
+    def __init__(self, busLinkAddress, numSlots, numChannels, delay=15e-3):
         """Initialize Agilint DAQ mainframe."""
         super(SwitchMainFrame, self).__init__(busAddress=busLinkAddress)
         self.busLinkAddress = busLinkAddress
         self.resourceLink = None
         self.numSlots = numSlots
         self.numChannels = numChannels
-        self.delay = 150e-3
+        self.delay = delay
 
     def open(self, baudRate=115200, readTerm=None, writeTerm=None):
         super(SwitchMainFrame, self).open()
@@ -31,66 +31,62 @@ class SwitchMainFrame(GPIBLinkResource):
     def getID(self):
         return str(self._querySCPI("*IDN?"))
 
-    def openAllChannels(self, slotIdx):
+    def isChannelClosed(self, channel):
+        cmd = str.format("ROUT:CLOS? (@{:03d})", channel)
+        rst = self._querySCPI(cmd)
+        return rst == '1'
+
+    def isChannelOpen(self, channel):
+        return not self.isChannelClosed(channel)
+
+    def openAllChannels(self, slotIdx, delay=0):
         for i in range(self.numChannels):
-            chIdx = 100*slotIdx + (i+1);
-            self.openChannel(chIdx);
+            chIdx = 100*slotIdx + (i+1)
+            self.openChannel(chIdx)
+            time.sleep(delay)
 
-    def closeAllChannels(self, slotIdx):
+    def closeAllChannels(self, slotIdx, delay=0):
         for i in range(self.numChannels):
-            chIdx = 100*slotIdx + (i+1);
-            self.closeChannel(chIdx);
+            chIdx = 100*slotIdx + (i+1)
+            self.closeChannel(chIdx, delay)
 
-    def openChannels(self, channels):
+    def openChannels(self, channels, delay=0):
         for ch in channels:
-            self.openChannel(ch)
+            self.openChannel(ch, delay)
 
-    def closeChannels(self, channels):
+    def closeChannels(self, channels, delay=0):
         for ch in channels:
-            self.closeChannel(ch)
+            self.closeChannel(ch, delay)
 
-    def openChannel(self, channel):
-        cmd = str.format("ROUT:OPEN (@{:03d});*OPC?", channel)
-        self._querySCPI(cmd)
+    def openChannel(self, channel, delay=0):
+        cmd = str.format("ROUT:OPEN (@{:03d})", channel)
+        self._writeSCPI(cmd)
+        time.sleep(delay)
 
-    def closeChannel(self, channel):
-        cmd = str.format("ROUT:CLOS (@{:03d});*OPC?", channel)
-        self._querySCPI(cmd)
+    def closeChannel(self, channel, delay=0):
+        cmd = str.format("ROUT:CLOS (@{:03d})", channel)
+        self._writeSCPI(cmd)
+        time.sleep(delay)
 
-    def _waitForCompletion(self, timeout=5):
+    def _waitForCompletion(self, timeout=2):
         done = False
         waitTime = 0.0
         while not done:
-            time.sleep(50E-3)
+            time.sleep(15E-3)
             doneStr = self._querySCPI("ROUT:DONE?")
             done = int(doneStr) if len(doneStr.strip()) else done
-            waitTime += 50E-3
+            waitTime += 15E-3
             if waitTime >= timeout:
                 raise Exception("waitForCompletion:timeout")
 
     def _writeSCPI(self, scpiStr):
         print(str.format("DAQ.write({:s})", scpiStr))
         self.write(scpiStr)
-        # self._waitForCompletion()
+        self._waitForCompletion()
 
     def _querySCPI(self, scpiStr):
-        attempts = 0
-        while True:
-            try:
-                print(str.format("DAQ.query({:s})", scpiStr))
-                rst = self.query(scpiStr)
-                print(str.format("DAQ.query({:s}) -> {:s}", scpiStr, rst))
-                return rst
-            except Exception as err:
-                attempts = attempts + 1
-                if "Timeout" in str(err):
-                    self.write("*CLS")
-                    self.resource.flush(1)
-                    self.write("*RST")
-                if attempts > 4:
-                    traceback.print_exc(file=sys.stdout)
-                    raise err
-
+        rst = self.query(scpiStr)
+        return rst
 
 if __name__ == '__main__':
     print("Starting")

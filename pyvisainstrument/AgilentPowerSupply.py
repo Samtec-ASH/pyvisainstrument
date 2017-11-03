@@ -48,8 +48,8 @@ class AgilentPowerSupply(GPIBLinkResource):
 
     def getOutputState(self):
         cmd = "OUTP:STAT?"
-        rst = bool(self._querySCPI(cmd))
-        return rst
+        rst = self._querySCPI(cmd)
+        return rst == '1'
 
     def setVoltageSetPoint(self, voltage, precision=2):
         cmd = str.format("VOLT {1:0.{0}f}", precision, voltage)

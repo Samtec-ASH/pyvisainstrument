@@ -20,7 +20,6 @@ class GPIBLinkResource(object):
     def close(self):
         if self.resource:
             self.resource.write("*CLS")
-            self.resource.write("*RST")
             self.resource.clear()
             self.resource.close()
         self.resource = None
