@@ -118,6 +118,48 @@ class AgilentVNA(GPIBLinkResource):
         self.setNumberSweepPoints(channel, numPoints)
         self.setSweepType(channel, sweepType)
 
+    def setupSES4PTraces(self):
+        # Delete all measurements
+        self._writeSCPI("CALC1:PAR:DEL:ALL")
+
+        # Turn on 4 windows
+        for i in range(1, 5):
+            self._writeSCPI("DISP:WIND1:STATE ON")
+
+        # Create all 16 single ended s-params w/ name ch1_s{i}{j}
+        for i in range(1, 5):
+            for j in range(1, 5):
+                self._writeSCPI(str.format("CALC1:PAR:DEF 'ch1_s{0}{1}',S{0}{1}", i, j))
+                self._writeSCPI(str.format("CALC1:PAR:SEL 'ch1_s{0}{1}'", i, j))
+                self._writeSCPI(str.format("DISP:WIND{0}:TRAC{1}:FEED 'ch1_s{0}{1}'", i, j))
+
+        self._writeSCPI("TRIG:SOUR IMMediate")
+
+    def captureSES4PTrace(self, dtype=float):
+
+        # Trigger trace and wait.
+        isRunning = True
+        while isRunning:
+            msg = self._querySCPI("SENSE1:SWEEP:MODE SINGle;*OPC?")
+            isRunning = (int(msg) == 0)
+            time.sleep(0.01)
+
+        numPoints = self.getNumberSweepPoints()
+        s4pData = np.zeros((4, 4, numPoints), dtype=dtype)
+
+        dtypeName = "SDATA" if dtype == complex else "FDATA"
+        dataQuery = str.format("CALC1:DATA? {:s}", dtypeName)
+        for i in range(1, 5):
+            for j in range(1, 5):
+                cmd = str.format("CALC1:PAR:SEL 'ch1_s{0}{1}'", i, j)
+                self._writeSCPI(cmd)
+                data = self.resource.query_ascii_values(dataQuery, container=np.array).squeeze()
+                # Complex is returned as alternating real,imag,...
+                if dtype == complex:
+                    data = data.view(dtype=complex)
+                s4pData[i-1, j-1] = data
+        return s4pData
+
     def setupS4PTraces(self):
         # Delete all measurements
         self._writeSCPI("CALC1:PAR:DEL:ALL")
@@ -228,7 +270,7 @@ class AgilentVNA(GPIBLinkResource):
         ' port 1 to port 4. 1,3,1,4,2,4,2,3.
         '''
         self._writeSCPI("SENSE1:corr:coll:guid:init")
-        self._writeSCPI("SENSE1:corr:coll:guid:thru:ports 1,3,1,4,2,4,2,3")
+        self._writeSCPI("SENSE1:corr:coll:guid:thru:ports 1,2,1,3,1,4,2,3,2,4,3,4")
         self._writeSCPI("SENSE1:corr:coll:guid:init")
 
     def getNumberECalibrationSteps(self):
