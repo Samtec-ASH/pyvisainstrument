@@ -1,5 +1,5 @@
-PyVisaInstrument
-====
+## PyVisaInstrument
+
 Provides boilerplate for various NI-VISA instruments and utilizes pyvisa.
 
 * AgilentVNA- Tested with following instruments
@@ -9,6 +9,6 @@ Provides boilerplate for various NI-VISA instruments and utilizes pyvisa.
 * AgilentPowerSupply- Tested with following instruments
   * P...
 
-Installation:
-====
+### Installation:
 pip install git+ssh://git@bitbucket.org/samteccmd/pyvisainstruments.git --upgrade
+pip install pyvisainstruments

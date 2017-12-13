@@ -189,6 +189,8 @@ class DummyPS(DummyTCPInstrument):
         }
 
     def _voltageSetPointHandler(self, params, isQuery):
+        print(params)
+        print(isQuery)
         if isQuery:
             fieldName = params[0] if len(params) else "SET"
             return self.state[int(self._currInst())]["VOLT"][fieldName]

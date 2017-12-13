@@ -74,7 +74,7 @@ class AgilentVNA(GPIBLinkResource):
         cmd = str.format("SENSE{:d}:SWEEP:POINTS {:d}", channel, numPoints)
         self._writeSCPI(cmd)
 
-    def getNumberSweepPoints(self, channel):
+    def getNumberSweepPoints(self, channel=1):
         cmd = str.format("SENSE{:d}:SWEEP:POINTS?", channel)
         rst = int(self._querySCPI(cmd))
         return rst
