@@ -30,7 +30,7 @@ class TestSwitchMainFrame(object):
         instAddr = "TCPIP::{:s}::{:d}::SOCKET".format(TCP_IP, TCP_PORT)
         self.dummyInst = Process(target=runDummyInstr, args=(done,))
         self.dummyInst.start()
-        self.daq = SwitchMainFrame(instAddr, 3, 20)
+        self.daq = SwitchMainFrame(instAddr, 3, 20, delay=0)
         self.done = done
 
     def teardown_class(self):
