@@ -1,13 +1,15 @@
 
-"""AgilentPowerSupply is a convience class to control various Agilent power supplies via SCPI over RS232
+"""AgilentPowerSupply is a convience class to control various Agilent power supplies
+via SCPI.
 """
 
+from __future__ import print_function
 from pyvisainstrument.GPIBLink import GPIBLinkResource
 
-
+# pylint: disable=too-many-public-methods
 class AgilentPowerSupply(GPIBLinkResource):
     """AgilentPowerSupply is a convience class to control various Agilent
-    power supplies via SCPI over RS232.
+    power supplies via SCPI.
 
     Attributes:
         None
@@ -15,25 +17,19 @@ class AgilentPowerSupply(GPIBLinkResource):
     def __init__(self, busLinkAddress):
         super(AgilentPowerSupply, self).__init__(busAddress=busLinkAddress)
 
-    def open(self, baudRate=None, readTerm=None, writeTerm=None):
-        """Open RS232 VISA connection.
+    # pylint: disable=arguments-differ,useless-super-delegation
+    def open(self, *args, **kwargs):
+        """Open instrument connection.
         Args:
-            baudRate (int, optional): Baud rate in hertz
-            readTerm (str, optional): Read termination chars
-            writeTerm (str, optional): Write termination chars
+            None
         Returns:
             None
         """
-        super(AgilentPowerSupply, self).open()
-        if baudRate:
-            self.resource.baud_rate = baudRate
-        if readTerm:
-            self.resource.read_termination = readTerm
-        if writeTerm:
-            self.resource.write_termination = writeTerm
+        super(AgilentPowerSupply, self).open(*args, **kwargs)
 
+    # pylint: disable=arguments-differ,useless-super-delegation
     def close(self):
-        """Close connection.
+        """Close instrument connection.
         Args:
             None
         Returns:
