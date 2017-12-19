@@ -28,7 +28,7 @@ class GPIBLinkResource(object):
             None
         """
         self.resource = visa.ResourceManager(self.ni_backend).open_resource(self.busAddress)
-        self.resource.clear()
+        # self.resource.clear()
         self.resource.query_delay = self.delay
         if readTerm:
             self.resource.read_termination = readTerm
@@ -47,7 +47,7 @@ class GPIBLinkResource(object):
         """
         if self.resource:
             self.resource.write("*CLS")
-            self.resource.clear()
+            # self.resource.clear()
             self.resource.close()
         self.resource = None
         self.isOpen = False
