@@ -18,3 +18,4 @@ docs/_build
 *.conf.in
 .python-version
 .cache/
+.pytest_cache

@@ -28,10 +28,10 @@ class DummyDAQ(DummyTCPInstrument):
         )
 
     def clearStatus(self, params, isQuery):
-        pass
+        return
 
     def reset(self, params, isQuery):
-        pass
+        return
 
     def isValidRoute(self, route):
         if len(route) != 3:
@@ -78,9 +78,10 @@ class DummyDAQ(DummyTCPInstrument):
                 else:
                     reply = ','.join(["1" if r in rst else "0" for r in routeNames])
                 return reply
-
             elif type(rst) in [str, int, float, bool]:
                 return str(rst)
+            elif callable(rst):
+                return rst(params, True)
             else:
                 print("Unknown query")
                 return str("-100")
@@ -93,6 +94,8 @@ class DummyDAQ(DummyTCPInstrument):
                 for route in routeNames:
                     self.setChannel(route, asClosed)
                 return None
+            elif callable(rst):
+                return rst(params, False)
             else:
                 print("Unknown command")
                 return None

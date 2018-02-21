@@ -47,6 +47,7 @@ class GPIBLinkResource(object):
         """
         if self.resource:
             self.resource.write("*CLS")
+            time.sleep(self.delay)
             # self.resource.clear()
             self.resource.close()
         self.resource = None

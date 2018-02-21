@@ -6,7 +6,7 @@ from pyvisainstrument import AgilentVNA
 from pyvisainstrument.testsuite import DummyVNA
 
 TCP_IP = '127.0.0.1'
-TCP_PORT = 5091
+TCP_PORT = 5050
 
 def runDummyInstr(done):
     baseArgs = dict(tcpAddress=TCP_IP, tcpPort=TCP_PORT, termStr='\n', bufferSize=1024)
@@ -37,7 +37,7 @@ class TestAgilentVNA(object):
         if self.dummyInst:
             self.dummyInst.join(1)
             if self.dummyInst.is_alive():
-                time.sleep(0.1)
+                time.sleep(0.5)
                 self.dummyInst.terminate()
 
     def setup_method(self, method):
@@ -49,7 +49,7 @@ class TestAgilentVNA(object):
     def test_getID(self):
         id = self.vna.getID()
         assert isinstance(id, str)
-    
+
     def test_setSweep(self):
         self.vna.setupSweep(
             1E7,

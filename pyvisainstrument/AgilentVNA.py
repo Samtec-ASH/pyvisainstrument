@@ -380,7 +380,7 @@ class AgilentVNA(GPIBLinkResource):
 
         self._writeSCPI("CALC1:FSIM:BAL:DEV BBALANCED")
         self._writeSCPI("CALC1:FSIM:BAL:TOP:BBAL:PPORTS 1,2,3,4")
-        self._writeSCPI("TRIG:SOUR IMMediate")
+        self._writeSCPI("TRIG:SOUR IMMEDIATE")
 
     def captureS4PTrace(self, dtype=float):
         """Convience method to capture differential sweep traces for
@@ -396,7 +396,7 @@ class AgilentVNA(GPIBLinkResource):
         # Trigger trace and wait.
         isRunning = True
         while isRunning:
-            msg = self._querySCPI("SENSE1:SWEEP:MODE SINGle;*OPC?")
+            msg = self._querySCPI("SENSE1:SWEEP:MODE SINGLE;*OPC?")
             isRunning = (int(msg) == 0)
             time.sleep(0.01)
 
@@ -447,25 +447,25 @@ class AgilentVNA(GPIBLinkResource):
             raise Exception('portThruPairs must be a list of even length')
 
         # Set port connector (i.e. 2.92 mm female)
-        cmd = "SENSE1:corr:coll:guid:conn:port"
+        cmd = "SENSE1:CORR:COLL:GUID:CONN:PORT"
         for i, connector in enumerate(portConnectors):
             self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, i+1, connector))
 
         # Set port e-cal kit (i.e. N4692-60003 ECal 13226)
-        cmd = "SENSE1:corr:coll:guid:ckit:port"
+        cmd = "SENSE1:CORR:COLL:GUID:CKIT:PORT"
         for i, kit in enumerate(portKits):
             self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, i+1, kit))
 
         # Set auto orientation setting
-        cmd = str.format("SENSE1:corr:pref:ecal:ori {:s}", "ON" if autoOrient else "OFF")
+        cmd = str.format("SENSE1:CORR:PREF:ECAL:ORI {:s}", "ON" if autoOrient else "OFF")
         self._writeSCPI(cmd)
 
         # Set port thru pairs or use default of VNA
-        self._writeSCPI("SENSE1:corr:coll:guid:init")
+        self._writeSCPI("SENSE1:CORR:COLL:GUID:INIT")
         if portThruPairs:
             thruPairDef = ','.join([str(thru) for thru in portThruPairs])
-            self._writeSCPI(str.format("SENSE1:corr:coll:guid:thru:ports {:s}", thruPairDef))
-            self._writeSCPI("SENSE1:corr:coll:guid:init")
+            self._writeSCPI(str.format("SENSE1:CORR:COLL:GUID:THRU:PORTS {:s}", thruPairDef))
+            self._writeSCPI("SENSE1:CORR:COLL:GUID:INIT")
 
     def getNumberECalSteps(self):
         """Get total number e-cal steps to be performed.
@@ -475,7 +475,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             int: Number of e-cal steps
         """
-        return int(self._querySCPI("SENSE1:corr:coll:guid:steps?"))
+        return int(self._querySCPI("SENSE1:CORR:COLL:GUID:STEPS?"))
 
     def getECalStepInfo(self, step):
         """Get e-cal step description.
@@ -485,7 +485,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             str: Description of e-cal step.
         """
-        return self._querySCPI(str.format("SENSE1:corr:coll:guid:desc? {:d}", step+1))
+        return self._querySCPI(str.format("SENSE1:CORR:COLL:GUID:DESC? {:d}", step+1))
 
     def performECalStep(self, step, save=True, delay=15):
         """Perform e-cal step. Should be done in order.
@@ -500,10 +500,10 @@ class AgilentVNA(GPIBLinkResource):
         """
         if step >= self.getNumberECalSteps():
             return
-        self._writeSCPI(str.format("SENSE1:corr:coll:guid:acq STAN{:d}", step+1))
+        self._writeSCPI(str.format("SENSE1:CORR:COLL:GUID:ACQ STAN{:d}", step+1))
         time.sleep(delay)
         if step == (self.getNumberECalSteps()-1) and save:
-            self._writeSCPI("SENSE1:corr:coll:guid:save")
+            self._writeSCPI("SENSE1:CORR:COLL:GUID:SAVE")
 
     def performECalSteps(self):
         """Perform all e-cal steps as iterator.

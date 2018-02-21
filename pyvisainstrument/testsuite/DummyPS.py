@@ -12,6 +12,10 @@ class DummyPS(DummyTCPInstrument):
         self.MIN_CURR = 0
         self.OUTPUT_ID = dict(P6V=1, P25V=2, N25V=3, OUTP1=1, OUTP2=2)
         self.state = {
+            "*IDN": "PS",
+            "*OPC": "1",
+            "*CLS": self.clearStatus,
+            "*RST": self.reset,
             1: {
                 "MEASURE": dict(VOLTAGE=dict(DC=0), CURRENT=dict(DC=0)),
                 "OUTPUT": dict(STATE="OFF"),
@@ -32,13 +36,8 @@ class DummyPS(DummyTCPInstrument):
             },
             "VOLTAGE": self._voltageSetPointHandler,
             "CURRENT": self._currentLimitHandler,
-            ""
             "DISPLAY": dict(TEXT=dict(DATA="", CLEAR=None)),
-            "INSTRUMENT": dict(NSELECT=1, SELECT="P6V"),
-            "*IDN": "PS",
-            "*OPC": "1",
-            "*CLS": self.clearStatus,
-            "*RST": self.reset
+            "INSTRUMENT": dict(NSELECT=1, SELECT="P6V")
         }
         self.mapCommands = dict(
             APPL='APPLY', APPLY='APPLY',
@@ -95,10 +94,10 @@ class DummyPS(DummyTCPInstrument):
         return self.state["INSTRUMENT"]["NSELECT"]
 
     def clearStatus(self, params, isQuery):
-        pass
+        return
 
     def reset(self, params, isQuery):
-        pass
+        return
 
     def processQuery(self, state, value, cmd, params):
         if callable(value):
@@ -120,13 +119,11 @@ class DummyPS(DummyTCPInstrument):
                 state[cmd] = castType(params[0])
             return None
         else:
-            print("Unknown command", cmd)
+            print("Unknown command")
             return None
 
     def processCommand(self, cmdTree, params, isQuery):
-
         mappedCmdTree = [self.mapCommands.get(cmd, cmd) for cmd in cmdTree]
-
         rootCmd = mappedCmdTree[0]
         if rootCmd in ['MEASURE', 'OUTPUT']:
             stateHead = self.state[self._currInst()]

@@ -1,8 +1,3 @@
-# This is a sample build configuration for Python.
-# Check our guides at https://confluence.atlassian.com/x/x4UWN for more examples.
-# Only use spaces to indent your .yml configuration.
-# -----
-# You can specify a custom docker image from Docker Hub as your build environment.
 image: python:3.5.1
 
 pipelines:
@@ -11,13 +6,38 @@ pipelines:
         name: Build and test
         caches:
           - pip
-        script: # Modify the commands below to build your repository.
+          - tox
+        script:
           - pip install virtualenv tox
           - tox
     - step:
-        name: Deploy to pypi
+        name: Deploy to test
+        deployment: test
+        caches:
+          - pip
+          - tox
+        script:
+          - pip install virtualenv tox
+          - tox
+    - step:
+        name: Deploy to staging
+        deployment: staging
+        trigger: manual
+        caches:
+          - pip
+          - tox
+        script:
+          - pip install twine wheel tox
+          - python setup.py bdist_wheel --universal
+    - step:
+        name: Deploy to production
+        deployment: production
         trigger: manual
         script:
           - pip install twine wheel tox
           - python setup.py bdist_wheel --universal
           - twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD --skip-existing dist/*
+
+definitions:
+  caches:
+    tox: .tox

@@ -6,15 +6,12 @@ from random import randint
 from pyvisainstrument import SwitchMainFrame
 from pyvisainstrument.testsuite import DummyDAQ
 
-TCP_IP = '127.0.0.1'
-TCP_PORT = 5092
-
-def runDummyInstr(done):
+def runDummyDAQInstr(done):
     baseArgs = dict(
         numPorts=3,
         numChannels=20,
-        tcpAddress=TCP_IP,
-        tcpPort=TCP_PORT,
+        tcpAddress='localhost',
+        tcpPort=5092,
         termStr='\n',
         bufferSize=1024
     )
@@ -27,8 +24,8 @@ class TestSwitchMainFrame(object):
 
     def setup_class(self):
         done = Value(c_bool, False)
-        instAddr = "TCPIP::{:s}::{:d}::SOCKET".format(TCP_IP, TCP_PORT)
-        self.dummyInst = Process(target=runDummyInstr, args=(done,))
+        instAddr = "TCPIP::{:s}::{:d}::SOCKET".format('localhost', 5092)
+        self.dummyInst = Process(target=runDummyDAQInstr, args=(done,))
         self.dummyInst.start()
         self.daq = SwitchMainFrame(instAddr, 3, 20, delay=0)
         self.done = done
@@ -36,7 +33,7 @@ class TestSwitchMainFrame(object):
     def teardown_class(self):
         # Set flag so instrument server knows we are done
         with self.done.get_lock():
-            self.done.value = True
+            self.done.value = False
         # In order for inst server to handle closing must trigger new disconnect
         if self.daq:
             if not self.daq.isOpen:
@@ -53,6 +50,7 @@ class TestSwitchMainFrame(object):
 
     def teardown_method(self, method):
         self.daq.close()
+        time.sleep(0.5)
 
     def test_getID(self):
         id = self.daq.getID()

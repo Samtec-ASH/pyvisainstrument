@@ -74,25 +74,29 @@ class DummyVNA(DummyTCPInstrument):
                     "TRAC1": {"FEED": "sdd11"},
                     "TRAC2": {"FEED": "sdd12"},
                     "TRAC3": {"FEED": "sdd21"},
-                    "TRAC4": {"FEED": "sdd22"}
+                    "TRAC4": {"FEED": "sdd22"},
+                    "STATE": "OFF"
                 },
                 "WIND2": {
                     "TRAC1": {"FEED": "sdd11"},
                     "TRAC2": {"FEED": "sdd12"},
                     "TRAC3": {"FEED": "sdd21"},
-                    "TRAC4": {"FEED": "sdd22"}
+                    "TRAC4": {"FEED": "sdd22"},
+                    "STATE": "OFF"
                 },
                 "WIND3": {
                     "TRAC1": {"FEED": "sdd11"},
                     "TRAC2": {"FEED": "sdd12"},
                     "TRAC3": {"FEED": "sdd21"},
-                    "TRAC4": {"FEED": "sdd22"}
+                    "TRAC4": {"FEED": "sdd22"},
+                    "STATE": "OFF"
                 },
                 "WIND4": {
                     "TRAC1": {"FEED": "sdd11"},
                     "TRAC2": {"FEED": "sdd12"},
                     "TRAC3": {"FEED": "sdd21"},
-                    "TRAC4": {"FEED": "sdd22"}
+                    "TRAC4": {"FEED": "sdd22"},
+                    "STATE": "OFF"
                 }
             },
             "TRIGGER": {
@@ -158,7 +162,8 @@ class DummyVNA(DummyTCPInstrument):
             POINT='POINTS', POINTS='POINTS',
             PORT1='PORT1', PORT2='PORT2',
             PORT3='PORT3', PORT4='PORT4',
-            THRU='THRU', STEPS='STEPS'
+            THRU='THRU', STEPS='STEPS',
+            SOUR='SOURCE', SOURCE='SOURCE'
         )
 
     def _getData(self, params):
@@ -171,10 +176,10 @@ class DummyVNA(DummyTCPInstrument):
         return dataStr
 
     def clearStatus(self, params, isQuery):
-        pass
+        return
 
     def reset(self, params, isQuery):
-        pass
+        return
 
     def processCommand(self, cmdTree, params, isQuery):
         rst = self.state
@@ -209,7 +214,6 @@ class DummyVNA(DummyTCPInstrument):
                 return None
             else:
                 print("Unknown command", prst, pcmd, rst)
-                print(cmdTree)
                 return None
 
 
