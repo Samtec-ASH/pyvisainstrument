@@ -33,7 +33,7 @@ class TestSwitchMainFrame(object):
     def teardown_class(self):
         # Set flag so instrument server knows we are done
         with self.done.get_lock():
-            self.done.value = False
+            self.done.value = True
         # In order for inst server to handle closing must trigger new disconnect
         if self.daq:
             if not self.daq.isOpen:
