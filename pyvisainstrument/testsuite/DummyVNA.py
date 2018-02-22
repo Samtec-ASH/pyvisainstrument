@@ -134,6 +134,7 @@ class DummyVNA(DummyTCPInstrument):
             OFFSet='OFFSET', OFFSET='OFFSET',
             PAR='PARAMETER', PARAMETER='PARAMETER',
             RDAT='RDATA', RDATA='RDATA',
+            DATA='DATA', SDATA='SDATA',
             SMO='SMOOTHING', SMOOTHING='SMOOTHING',
             TRANS='TRANSFORM', TRANSFORM='TRANSFORM',
             UNC='UNCERTAINTY', UNCERTAINTY='UNCERTAINTY',
@@ -166,14 +167,15 @@ class DummyVNA(DummyTCPInstrument):
             SOUR='SOURCE', SOURCE='SOURCE'
         )
 
-    def _getData(self, params):
-        isComplex = len(params) and (params[0] in ["RDATA", "SDATA"])
-        numPoints = int(self.state["SENSE"]["SWEEP"]["POINTS"])
-        if isComplex:
-            numPoints = 2*numPoints
-        data = np.random.rand(numPoints)
-        dataStr = ",".join('{:+.6E}'.format(v) for v in data)
-        return dataStr
+    def _getData(self, params, isQuery):
+        if isQuery:
+            isComplex = len(params) and (params[0] in ["RDATA", "SDATA"])
+            numPoints = int(self.state["SENSE"]["SWEEP"]["POINTS"])
+            if isComplex:
+                numPoints = 2*numPoints
+            data = np.random.rand(numPoints)
+            dataStr = ",".join('{:+.6E}'.format(v) for v in data)
+            return dataStr
 
     def clearStatus(self, params, isQuery):
         return
