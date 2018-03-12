@@ -247,16 +247,19 @@ class AgilentVNA(GPIBLinkResource):
         rst = int(self._querySCPI(cmd))
         return rst
 
-    def setActiveCalSet(self, calSet, channel=1):
+    def setActiveCalSet(self, calSet, interpolate=True, channel=1):
         """Select and applies cal set to specified channel
         Can get list of cal sets with SENS:CORR:CSET:CAT?
         Args:
             calSet (str): Cal Set to make active
+            interpolate (bool): Interpolate data points
             channel (int): Channel number
         Returns:
             None
         """
         cmd = str.format("SENSE{:d}:CORR:CSET:ACT '{:s}',1", channel, calSet)
+        self._writeSCPI(cmd)
+        cmd = "SENSE:CORR:INT {:s}".format('ON' if interpolate else 'OFF')
         self._writeSCPI(cmd)
 
     # pylint: disable=too-many-arguments
@@ -487,7 +490,7 @@ class AgilentVNA(GPIBLinkResource):
         """
         return self._querySCPI(str.format("SENSE1:CORR:COLL:GUID:DESC? {:d}", step+1))
 
-    def performECalStep(self, step, save=True, delay=15):
+    def performECalStep(self, step, save=True, saveName=None, delay=15):
         """Perform e-cal step. Should be done in order.
         Must be called after setupECalibration().
         Best used for asynchronous execution.
@@ -503,9 +506,10 @@ class AgilentVNA(GPIBLinkResource):
         self._writeSCPI(str.format("SENSE1:CORR:COLL:GUID:ACQ STAN{:d}", step+1))
         time.sleep(delay)
         if step == (self.getNumberECalSteps()-1) and save:
-            self._writeSCPI("SENSE1:CORR:COLL:GUID:SAVE")
+            saveSuffix = 'SAVE:CSET {:s}'.format(saveName) if saveName else 'SAVE'
+            self._writeSCPI('SENSE1:CORR:COLL:GUID:{:s}'.format(saveSuffix))
 
-    def performECalSteps(self):
+    def performECalSteps(self, save=True, saveName=None, delay=15):
         """Perform all e-cal steps as iterator.
         Must be called after setupECalibration().
         Best used for synchronous execution.
@@ -524,7 +528,7 @@ class AgilentVNA(GPIBLinkResource):
         while i < numSteps:
             msg = self.getECalStepInfo(i)
             yield msg
-            self.performECalStep(i, save=True)
+            self.performECalStep(i, save=save, saveName=saveName, delay=delay)
             i += 1
 
 

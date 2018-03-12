@@ -46,11 +46,12 @@ class DummyVNA(DummyTCPInstrument):
                                 "PORT4": ""
                             },
                             "ACQUIRE": None,
-                            "SAVE": None,
+                            "SAVE": {"CSET": None},
                             "THRU": {"PORTS": [1, 2, 1, 3, 1, 4]},
                             "INITIATE": "+1"
                         }
                     },
+                    "INTERPOLATE": "ON",
                     "PREFERENCE": {"ECAL": {"ORIENTATION": "ON"}}
                 }
             },
@@ -164,7 +165,8 @@ class DummyVNA(DummyTCPInstrument):
             PORT1='PORT1', PORT2='PORT2',
             PORT3='PORT3', PORT4='PORT4',
             THRU='THRU', STEPS='STEPS',
-            SOUR='SOURCE', SOURCE='SOURCE'
+            SOUR='SOURCE', SOURCE='SOURCE',
+            CSET='CSET', INT='INTERPOLATE'
         )
 
     def _getData(self, params, isQuery):
