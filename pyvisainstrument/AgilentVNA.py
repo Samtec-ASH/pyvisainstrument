@@ -326,10 +326,10 @@ class AgilentVNA(GPIBLinkResource):
         # Trigger trace and wait.
         self._writeSCPI("*CLS")
         self._writeSCPI("SENSE1:SWEEP:MODE SINGLE;*OPC")
-        isRunning = True
-        while isRunning:
+        isComplete = False
+        while not isComplete:
             msg = self._querySCPI("*ESR?")
-            isRunning = (int(msg) & 0x01)
+            isComplete = (int(msg) & 0x01)
             time.sleep(0.1)
 
         numPoints = self.getNumberSweepPoints()
@@ -403,10 +403,10 @@ class AgilentVNA(GPIBLinkResource):
         # Trigger trace and wait.
         self._writeSCPI("*CLS")
         self._writeSCPI("SENSE1:SWEEP:MODE SINGLE;*OPC")
-        isRunning = True
-        while isRunning:
+        isComplete = False
+        while not isComplete:
             msg = self._querySCPI("*ESR?")
-            isRunning = (int(msg) & 0x01)
+            isComplete = (int(msg) & 0x01)
             time.sleep(0.1)
         numPoints = self.getNumberSweepPoints()
         s4pData = np.zeros((2, 2, numPoints), dtype=dtype)
