@@ -14,8 +14,9 @@ class AgilentPowerSupply(GPIBLinkResource):
     Attributes:
         None
     """
-    def __init__(self, busLinkAddress):
+    def __init__(self, busLinkAddress, verbose=False):
         super(AgilentPowerSupply, self).__init__(busAddress=busLinkAddress)
+        self.verbose = verbose
 
     # pylint: disable=arguments-differ,useless-super-delegation
     def open(self, *args, **kwargs):
@@ -267,9 +268,9 @@ class AgilentPowerSupply(GPIBLinkResource):
         Returns:
             str: Query result
         """
-        print(str.format("PS.query({:s})", scpiStr))
         rst = self.query(scpiStr)
-        print(str.format("PS.query({:s}) -> {:s}", scpiStr, rst))
+        if self.verbose:
+            print(str.format("PS.query({:s}) -> {:s}", scpiStr, rst))
         return rst
 
     def _writeSCPI(self, scpiStr):
@@ -279,7 +280,8 @@ class AgilentPowerSupply(GPIBLinkResource):
         Returns:
             None
         """
-        print(str.format("PS.write({:s})", scpiStr))
+        if self.verbose:
+            print(str.format("PS.write({:s})", scpiStr))
         self.write(scpiStr)
 
 

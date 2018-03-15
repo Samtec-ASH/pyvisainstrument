@@ -14,9 +14,10 @@ class AgilentVNA(GPIBLinkResource):
     Atributes:
         None
     """
-    def __init__(self, busLinkAddress):
+    def __init__(self, busLinkAddress, verbose=False):
         """Init function."""
         super(AgilentVNA, self).__init__(busAddress=busLinkAddress)
+        self.verbose = verbose
         self.busLinkAddress = busLinkAddress
 
     # pylint: disable=arguments-differ,useless-super-delegation
@@ -55,7 +56,8 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             None
         """
-        print(str.format("VNA.write({:s})", scpiStr))
+        if self.verbose:
+            print(str.format("VNA.write({:s})", scpiStr))
         self.write(scpiStr)
 
     def _querySCPI(self, scpiStr):
@@ -65,9 +67,9 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             str: Query result
         """
-        print(str.format("VNA.query({:s})", scpiStr))
         rst = self.query(scpiStr)
-        print(str.format("VNA.query({:s}) -> {:s}", scpiStr, rst))
+        if self.verbose:
+            print(str.format("VNA.query({:s}) -> {:s}", scpiStr, rst))
         return rst
 
     def setStartFreq(self, freq_hz, channel=1):
@@ -322,11 +324,13 @@ class AgilentVNA(GPIBLinkResource):
             N- Number of sweep points
         """
         # Trigger trace and wait.
+        self._writeSCPI("*CLS")
+        self._writeSCPI("SENSE1:SWEEP:MODE SINGLE;*OPC")
         isRunning = True
         while isRunning:
-            msg = self._querySCPI("SENSE1:SWEEP:MODE SINGle;*OPC?")
-            isRunning = (int(msg) == 0)
-            time.sleep(0.01)
+            msg = self._querySCPI("*ESR?")
+            isRunning = (int(msg) & 0x01)
+            time.sleep(0.1)
 
         numPoints = self.getNumberSweepPoints()
         dtypeName = "SDATA" if dtype == complex else "FDATA"
@@ -397,12 +401,13 @@ class AgilentVNA(GPIBLinkResource):
             N- Number of sweep points
         """
         # Trigger trace and wait.
+        self._writeSCPI("*CLS")
+        self._writeSCPI("SENSE1:SWEEP:MODE SINGLE;*OPC")
         isRunning = True
         while isRunning:
-            msg = self._querySCPI("SENSE1:SWEEP:MODE SINGLE;*OPC?")
-            isRunning = (int(msg) == 0)
-            time.sleep(0.01)
-
+            msg = self._querySCPI("*ESR?")
+            isRunning = (int(msg) & 0x01)
+            time.sleep(0.1)
         numPoints = self.getNumberSweepPoints()
         s4pData = np.zeros((2, 2, numPoints), dtype=dtype)
 

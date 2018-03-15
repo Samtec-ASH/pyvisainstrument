@@ -12,8 +12,9 @@ class SwitchMainFrame(GPIBLinkResource):
     Attributes:
         None
     """
-    def __init__(self, busLinkAddress, numSlots, numChannels, delay=15e-3):
+    def __init__(self, busLinkAddress, numSlots, numChannels, delay=15e-3, verbose=False):
         super(SwitchMainFrame, self).__init__(busAddress=busLinkAddress)
+        self.verbose = verbose
         self.busLinkAddress = busLinkAddress
         self.resourceLink = None
         self.numSlots = numSlots
@@ -179,7 +180,8 @@ class SwitchMainFrame(GPIBLinkResource):
         Returns:
             None
         """
-        print(str.format("DAQ.write({:s})", scpiStr))
+        if self.verbose:
+            print(str.format("DAQ.write({:s})", scpiStr))
         self.write(scpiStr)
         self._waitForCompletion()
 
@@ -191,6 +193,8 @@ class SwitchMainFrame(GPIBLinkResource):
             str: Query result
         """
         rst = self.query(scpiStr)
+        if self.verbose:
+            print(str.format("DAQ.query({:s}) -> {:s}", scpiStr, rst))
         return rst
 
 
