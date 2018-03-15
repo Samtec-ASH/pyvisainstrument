@@ -6,12 +6,13 @@ from __future__ import print_function
 import time
 from pyvisainstrument.GPIBLink import GPIBLinkResource
 
-
+# pylint: disable=too-many-public-methods
 class SwitchMainFrame(GPIBLinkResource):
     """SwitchMainFrame is a convience class to control various Agilent Switch DAQs.
     Attributes:
         None
     """
+    # pylint: disable=too-many-arguments
     def __init__(self, busLinkAddress, numSlots, numChannels, delay=15e-3, verbose=False):
         super(SwitchMainFrame, self).__init__(busAddress=busLinkAddress)
         self.verbose = verbose
