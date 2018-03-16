@@ -16,6 +16,7 @@ class DummyPS(DummyTCPInstrument):
             "*OPC": "1",
             "*CLS": self.clearStatus,
             "*RST": self.reset,
+            "*ESR": "1",
             1: {
                 "MEASURE": dict(VOLTAGE=dict(DC=0), CURRENT=dict(DC=0)),
                 "OUTPUT": dict(STATE="OFF"),

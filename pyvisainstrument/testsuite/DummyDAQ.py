@@ -15,6 +15,7 @@ class DummyDAQ(DummyTCPInstrument):
             "*RST": self.reset,
             "*IDN": "34970A",
             "*OPC": "1",
+            "*ESR": "1",
             "ROUTE": {
                 "OPEN": [str.format("{:01d}{:02d}", p+1, c+1) for p in range(numPorts) for c in range(numChannels)],
                 "CLOSE": [],

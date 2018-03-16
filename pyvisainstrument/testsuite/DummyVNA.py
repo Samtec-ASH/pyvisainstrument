@@ -13,6 +13,7 @@ class DummyVNA(DummyTCPInstrument):
             "*RST": self.reset,
             "*IDN": "VNA",
             "*OPC": "1",
+            "*ESR": "1",
             "SENSE": {
                 "FREQUENCY": {
                     "START": "1E7",
