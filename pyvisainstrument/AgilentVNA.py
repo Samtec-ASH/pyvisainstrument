@@ -508,8 +508,14 @@ class AgilentVNA(GPIBLinkResource):
         """
         if step >= self.getNumberECalSteps():
             return
-        self._writeSCPI(str.format("SENSE1:CORR:COLL:GUID:ACQ STAN{:d}", step+1))
-        time.sleep(delay)
+        self._writeSCPI(str.format("SENSE1:CORR:COLL:GUID:ACQ STAN{:d},ASYN", step+1))
+        self._writeSCPI("*CLS")
+        self._writeSCPI('*OPC')
+        isComplete = False
+        while not isComplete:
+            msg = self._querySCPI("*ESR?")
+            isComplete = (int(msg) & 0x01)
+            time.sleep(0.4)
         if step == (self.getNumberECalSteps()-1) and save:
             saveSuffix = 'SAVE:CSET {:s}'.format(saveName) if saveName else 'SAVE'
             self._writeSCPI('SENSE1:CORR:COLL:GUID:{:s}'.format(saveSuffix))
