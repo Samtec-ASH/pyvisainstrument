@@ -495,7 +495,7 @@ class AgilentVNA(GPIBLinkResource):
         """
         return self._querySCPI(str.format("SENSE1:CORR:COLL:GUID:DESC? {:d}", step+1))
 
-    def performECalStep(self, step, save=True, saveName=None, delay=15):
+    def performECalStep(self, step, save=True, saveName=None, delay=2):
         """Perform e-cal step. Should be done in order.
         Must be called after setupECalibration().
         Best used for asynchronous execution.
@@ -516,6 +516,7 @@ class AgilentVNA(GPIBLinkResource):
             msg = self._querySCPI("*ESR?")
             isComplete = (int(msg) & 0x01)
             time.sleep(0.4)
+        time.sleep(delay)
         if step == (self.getNumberECalSteps()-1) and save:
             saveSuffix = 'SAVE:CSET {:s}'.format(saveName) if saveName else 'SAVE'
             self._writeSCPI('SENSE1:CORR:COLL:GUID:{:s}'.format(saveSuffix))
