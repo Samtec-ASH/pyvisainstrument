@@ -518,7 +518,7 @@ class AgilentVNA(GPIBLinkResource):
             time.sleep(0.4)
         time.sleep(delay)
         if step == (self.getNumberECalSteps()-1) and save:
-            saveSuffix = 'SAVE:CSET {:s}'.format(saveName) if saveName else 'SAVE'
+            saveSuffix = 'SAVE:CSET "{:s}"'.format(saveName) if saveName else 'SAVE'
             self._writeSCPI('SENSE1:CORR:COLL:GUID:{:s}'.format(saveSuffix))
 
     def performECalSteps(self, save=True, saveName=None, delay=15):
