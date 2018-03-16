@@ -508,8 +508,8 @@ class AgilentVNA(GPIBLinkResource):
         """
         if step >= self.getNumberECalSteps():
             return
-        self._writeSCPI(str.format("SENSE1:CORR:COLL:GUID:ACQ STAN{:d},ASYN", step+1))
         self._writeSCPI("*CLS")
+        self._writeSCPI(str.format("SENSE1:CORR:COLL:GUID:ACQ STAN{:d},ASYN", step+1))
         self._writeSCPI('*OPC')
         isComplete = False
         while not isComplete:
