@@ -259,9 +259,9 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             None
         """
-        cmd = str.format("SENSE{:d}:CORR:CSET:ACT '{:s}',1", channel, calSet)
-        self._writeSCPI(cmd)
         cmd = "SENSE:CORR:INT {:s}".format('ON' if interpolate else 'OFF')
+        self._writeSCPI(cmd)
+        cmd = str.format("SENSE{:d}:CORR:CSET:ACT '{:s}',1", channel, calSet)
         self._writeSCPI(cmd)
 
     # pylint: disable=too-many-arguments
