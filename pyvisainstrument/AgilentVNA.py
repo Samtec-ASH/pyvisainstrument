@@ -72,6 +72,17 @@ class AgilentVNA(GPIBLinkResource):
             print(str.format("VNA.query({:s}) -> {:s}", scpiStr, rst))
         return rst
 
+    def _writeAsyncSCPI(self, scpiStr, delay=0.1):
+        self._writeSCPI('*CLS')
+        self._writeSCPI(scpiStr)
+        self._writeSCPI('*OPC')
+        isComplete = False
+        while not isComplete:
+            msg = self._querySCPI("*ESR?")
+            isComplete = (int(msg) & 0x01)
+            if not isComplete:
+                time.sleep(delay)
+
     def setStartFreq(self, freq_hz, channel=1):
         """Set start frequency for channel.
         Args:
@@ -245,7 +256,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             str: Sweep mode
         """
-        cmd = str.format("SENSE{:d}:SWEEP:MODE", channel)
+        cmd = str.format("SENSE{:d}:SWEEP:MODE?", channel)
         rst = int(self._querySCPI(cmd))
         return rst
 
@@ -317,38 +328,32 @@ class AgilentVNA(GPIBLinkResource):
             dtype: Data format either float or complex
             traceNames: Name of traces to capture
         Returns:
-            Numpy.array: Numpy tensor with shape TxN if traceNames
-            else SxSxN otherwise.
+            Numpy.array: Numpy tensor with shape NxT if traceNames
+            else NxSxS otherwise.
             T- Number of supplied traces
             S- 4 for single ended mode on 4-port
             N- Number of sweep points
         """
         # Trigger trace and wait.
-        self._writeSCPI("*CLS")
-        self._writeSCPI("SENSE1:SWEEP:MODE SINGLE;*OPC")
-        isComplete = False
-        while not isComplete:
-            msg = self._querySCPI("*ESR?")
-            isComplete = (int(msg) & 0x01)
-            time.sleep(0.1)
-
+        self._writeAsyncSCPI('SENSE1:SWEEP:MODE SINGLE', delay=0.1)
         numPoints = self.getNumberSweepPoints()
         dtypeName = "SDATA" if dtype == complex else "FDATA"
         dataQuery = str.format("CALC1:DATA? {:s}", dtypeName)
 
-        # Get only provided traces data as TxN Tensor
+        # Get only provided traces data as NxT Tensor
         if traceNames:
-            s4pData = np.zeros((len(traceNames), numPoints), dtype=dtype)
+            s4pData = np.zeros((numPoints, len(traceNames)), dtype=dtype)
             for i, traceName in enumerate(traceNames):
                 cmd = str.format("CALC1:PAR:SEL '{0}'", traceName)
                 self._writeSCPI(cmd)
                 data = self.resource.query_ascii_values(dataQuery, container=np.array).squeeze()
                 if dtype == complex:
                     data = data.view(dtype=complex)
-                s4pData[i] = data
-        # Get all 16 traces data as SxSxN Tensor
+                s4pData[:, i] = data
+
+        # Get all 16 traces data as NxSxS Tensor
         else:
-            s4pData = np.zeros((4, 4, numPoints), dtype=dtype)
+            s4pData = np.zeros((numPoints, 4, 4), dtype=dtype)
             for i in range(1, 5):
                 for j in range(1, 5):
                     cmd = str.format("CALC1:PAR:SEL 'ch1_s{0}{1}'", i, j)
@@ -357,7 +362,7 @@ class AgilentVNA(GPIBLinkResource):
                     # Complex is returned as alternating real,imag,...
                     if dtype == complex:
                         data = data.view(dtype=complex)
-                    s4pData[i-1, j-1] = data
+                    s4pData[:, i-1, j-1] = data
         return s4pData
 
     def setupS4PTraces(self):
@@ -396,20 +401,14 @@ class AgilentVNA(GPIBLinkResource):
         Args:
             dtype: Data format either float or complex
         Returns:
-            Numpy.array: Numpy tensor with shape SxSxN
+            Numpy.array: Numpy tensor with shape NxSxS
             S- 2 for differential mode on 4-port
             N- Number of sweep points
         """
         # Trigger trace and wait.
-        self._writeSCPI("*CLS")
-        self._writeSCPI("SENSE1:SWEEP:MODE SINGLE;*OPC")
-        isComplete = False
-        while not isComplete:
-            msg = self._querySCPI("*ESR?")
-            isComplete = (int(msg) & 0x01)
-            time.sleep(0.1)
+        self._writeAsyncSCPI('SENSE1:SWEEP:MODE SINGLE', delay=0.1)
         numPoints = self.getNumberSweepPoints()
-        s4pData = np.zeros((2, 2, numPoints), dtype=dtype)
+        s4pData = np.zeros((numPoints, 2, 2), dtype=dtype)
 
         dtypeName = "SDATA" if dtype == complex else "FDATA"
         dataQuery = str.format("CALC1:DATA? {:s}", dtypeName)
@@ -421,7 +420,7 @@ class AgilentVNA(GPIBLinkResource):
                 # Complex is returned as alternating real,imag,...
                 if dtype == complex:
                     data = data.view(dtype=complex)
-                s4pData[i-1, j-1] = data
+                s4pData[:, i-1, j-1] = data
         return s4pData
 
     def setupECalibration(self, portConnectors, portKits, portThruPairs=None, autoOrient=True):
