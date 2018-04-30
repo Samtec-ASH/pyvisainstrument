@@ -260,7 +260,7 @@ class AgilentVNA(GPIBLinkResource):
         rst = int(self._querySCPI(cmd))
         return rst
 
-    def setActiveCalSet(self, calSet, interpolate=True, channel=1):
+    def setActiveCalSet(self, calSet, interpolate=True, applyCalStimulus=True, channel=1):
         """Select and applies cal set to specified channel
         Can get list of cal sets with SENS:CORR:CSET:CAT?
         Args:
@@ -272,7 +272,8 @@ class AgilentVNA(GPIBLinkResource):
         """
         cmd = "SENSE:CORR:INT {:s}".format('ON' if interpolate else 'OFF')
         self._writeSCPI(cmd)
-        cmd = str.format("SENSE{:d}:CORR:CSET:ACT '{:s}',1", channel, calSet)
+        cmd = str.format("SENSE{0}:CORR:CSET:ACT '{1}',{2}",
+                         channel, calSet, '1' if applyCalStimulus else '0')
         self._writeSCPI(cmd)
 
     # pylint: disable=too-many-arguments
