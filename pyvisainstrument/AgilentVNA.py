@@ -72,7 +72,25 @@ class AgilentVNA(GPIBLinkResource):
             print(str.format("VNA.query({:s}) -> {:s}", scpiStr, rst))
         return rst
 
+    def _queryAsciiValues(self, scpiStr):
+        """Perform SCPI query of ascii-based values
+        Args:
+            scpiStr (str): SCPI query
+        Returns:
+            rst: Numpy array
+        """
+        rst = self.resource.query_ascii_values(scpiStr, container=np.array)
+        if self.verbose:
+            print('VNA.query({0})'.format(scpiStr))
+        return rst
+
     def _writeAsyncSCPI(self, scpiStr, delay=0.1):
+        """Perform SCPI query asynchronously for long running commands
+        Args:
+            scpiStr (str): SCPI query
+        Returns:
+            rst: Numpy array
+        """
         self._writeSCPI('*CLS')
         self._writeSCPI(scpiStr)
         self._writeSCPI('*OPC')
@@ -347,7 +365,7 @@ class AgilentVNA(GPIBLinkResource):
             for i, traceName in enumerate(traceNames):
                 cmd = str.format("CALC1:PAR:SEL '{0}'", traceName)
                 self._writeSCPI(cmd)
-                data = self.resource.query_ascii_values(dataQuery, container=np.array).squeeze()
+                data = self._queryAsciiValues(dataQuery).squeeze()
                 if dtype == complex:
                     data = data.view(dtype=complex)
                 s4pData[:, i] = data
@@ -359,7 +377,7 @@ class AgilentVNA(GPIBLinkResource):
                 for j in range(1, 5):
                     cmd = str.format("CALC1:PAR:SEL 'ch1_s{0}{1}'", i, j)
                     self._writeSCPI(cmd)
-                    data = self.resource.query_ascii_values(dataQuery, container=np.array).squeeze()
+                    data = self._queryAsciiValues(dataQuery).squeeze()
                     # Complex is returned as alternating real,imag,...
                     if dtype == complex:
                         data = data.view(dtype=complex)
@@ -417,7 +435,7 @@ class AgilentVNA(GPIBLinkResource):
             for j in range(1, 3):
                 cmd = str.format("CALC1:PAR:SEL 'sdd{0}{1}'", i, j)
                 self._writeSCPI(cmd)
-                data = self.resource.query_ascii_values(dataQuery, container=np.array).squeeze()
+                data = self._queryAsciiValues(dataQuery).squeeze()
                 # Complex is returned as alternating real,imag,...
                 if dtype == complex:
                     data = data.view(dtype=complex)
