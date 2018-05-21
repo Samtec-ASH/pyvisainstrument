@@ -256,6 +256,28 @@ class AgilentVNA(GPIBLinkResource):
         rst = str(self._querySCPI(cmd))
         return rst
 
+    def setBandwidth(self, bwid, channel=1):
+        """Set IF bandwidth.
+        Args:
+            bwid (int|string): Bandwidth in hertz ('MIN', 'MAX')
+            channel (int): Channel number
+        Returns:
+            None
+        """
+        cmd = str.format("SENSE{0:d}:BWID {1}", channel, bwid)
+        self._writeSCPI(cmd)
+
+    def getBandwidth(self, channel=1):
+        """Get IF bandwidth.
+        Args:
+            channel (int): Channel number
+        Returns:
+            int: Bandwidth in hertz
+        """
+        cmd = str.format("SENSE{0:d}:BWID?", channel)
+        rst = int(self._querySCPI(cmd))
+        return rst
+
     def setSweepMode(self, mode, channel=1):
         """Set sweep mode.
         Args:
