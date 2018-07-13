@@ -310,13 +310,12 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             None
         """
-        cmd = "SENSE:CORR:INT {:s}".format('ON' if interpolate else 'OFF')
+        cmd = "SENSE{0}:CORR:INT {1}".format(channel, 'ON' if interpolate else 'OFF')
         self._writeSCPI(cmd)
         cmd = str.format("SENSE{0}:CORR:CSET:ACT '{1}',{2}",
                          channel, calSet, '1' if applyCalStimulus else '0')
         self._writeSCPI(cmd)
 
-    # pylint: disable=too-many-arguments
     def setupSweep(self, startFreq, stopFreq, numPoints, sweepType="LINEAR", channel=1):
         """Convience method to configure common sweep parameters
         Args:
