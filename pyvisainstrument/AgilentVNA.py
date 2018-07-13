@@ -316,6 +316,7 @@ class AgilentVNA(GPIBLinkResource):
                          channel, calSet, '1' if applyCalStimulus else '0')
         self._writeSCPI(cmd)
 
+    # pylint: disable=too-many-arguments
     def setupSweep(self, startFreq, stopFreq, numPoints, sweepType="LINEAR", channel=1):
         """Convience method to configure common sweep parameters
         Args:
