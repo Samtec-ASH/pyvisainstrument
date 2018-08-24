@@ -389,7 +389,8 @@ class AgilentVNA(GPIBLinkResource):
                 self._writeSCPI(cmd)
                 data = self._queryAsciiValues(dataQuery).squeeze()
                 if dtype == complex:
-                    data = data.view(dtype=complex)
+                    data = data[0::2] + 1j*data[1::2]
+                    # data.view(dtype=complex)
                 s4pData[:, i] = data
 
         # Get all 16 traces data as NxSxS Tensor
@@ -402,7 +403,8 @@ class AgilentVNA(GPIBLinkResource):
                     data = self._queryAsciiValues(dataQuery).squeeze()
                     # Complex is returned as alternating real,imag,...
                     if dtype == complex:
-                        data = data.view(dtype=complex)
+                        data = data[0::2] + 1j*data[1::2]
+                        # data = data.view(dtype=complex)
                     s4pData[:, i-1, j-1] = data
         return s4pData
 
@@ -460,7 +462,8 @@ class AgilentVNA(GPIBLinkResource):
                 data = self._queryAsciiValues(dataQuery).squeeze()
                 # Complex is returned as alternating real,imag,...
                 if dtype == complex:
-                    data = data.view(dtype=complex)
+                    data = data[0::2] + 1j*data[1::2]
+                    # data = data.view(dtype=complex)
                 s4pData[:, i-1, j-1] = data
         return s4pData
 
