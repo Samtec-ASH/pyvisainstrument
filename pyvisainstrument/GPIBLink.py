@@ -6,7 +6,7 @@ import time
 import os
 import visa
 
-class GPIBLinkResource(object):
+class GPIBLinkResource:
     """GPIBLinkResource is a base class for various GPIB-based instruments.
     Attributes:
         None
