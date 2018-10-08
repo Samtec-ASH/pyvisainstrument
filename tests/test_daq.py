@@ -23,18 +23,20 @@ class TestAgilentDAQ:
             numChannels=20,
             delay=0
         )
+        self.daq.open(readTerm='\n', writeTerm='\n')
 
     def teardown_class(self):
+        self.daq.close()
         self.device.close()
         self.device.join()
         self.device = None
         self.daq = None
 
     def setup_method(self, method):
-        self.daq.open(readTerm='\n', writeTerm='\n')
+        pass
 
     def teardown_method(self, method):
-        self.daq.close()
+        pass
 
     def test_getID(self):
         id = self.daq.getID()

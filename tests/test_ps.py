@@ -12,18 +12,20 @@ class TestAgilentPowerSupply:
         self.device.open(readTerm='\n', writeTerm='\n')
         self.device.start()
         self.ps = AgilentPowerSupply(busAddress=instAddr, delay=0)
+        self.ps.open(readTerm='\n', writeTerm='\n')
 
     def teardown_class(self):
+        self.ps.close()
         self.device.close()
         self.device.join()
         self.device = None
         self.ps = None
 
     def setup_method(self, method):
-        self.ps.open(readTerm='\n', writeTerm='\n')
+        pass
 
     def teardown_method(self, method):
-        self.ps.close()
+        pass
 
     def test_getID(self):
         id = self.ps.getID()

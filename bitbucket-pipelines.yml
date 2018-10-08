@@ -4,6 +4,7 @@ pipelines:
   default:
     - step:
         name: Build and test
+        max-time: 10
         caches:
           - pip
           - tox
@@ -13,6 +14,7 @@ pipelines:
     - step:
         name: Deploy to test
         deployment: test
+        max-time: 10
         caches:
           - pip
           - tox
@@ -22,7 +24,7 @@ pipelines:
     - step:
         name: Deploy to staging
         deployment: staging
-        trigger: manual
+        max-time: 10
         caches:
           - pip
           - tox
@@ -32,6 +34,7 @@ pipelines:
     - step:
         name: Deploy to production
         deployment: production
+        max-time: 10
         trigger: manual
         script:
           - pip install twine wheel tox
