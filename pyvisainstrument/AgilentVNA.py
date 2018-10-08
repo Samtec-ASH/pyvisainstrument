@@ -1,105 +1,16 @@
-
-"""AgilentVNA is a convience class to control various Agilent VNAs via SCPI
-"""
-
+"""AgilentVNA is a convience class to control various Agilent VNAs."""
 from __future__ import print_function
 import time
 import numpy as np
-from pyvisainstrument.GPIBLink import GPIBLinkResource
+from pyvisainstrument.VisaResource import VisaResource
+
 
 # pylint: disable=too-many-public-methods
-class AgilentVNA(GPIBLinkResource):
-    """AgilentVNA is a convience class to control various Agilent
-    VNAs via SCPI.
-    Atributes:
-        None
-    """
-    def __init__(self, busLinkAddress, verbose=False):
-        """Init function."""
-        super(AgilentVNA, self).__init__(busAddress=busLinkAddress)
-        self.verbose = verbose
-        self.busLinkAddress = busLinkAddress
-
-    # pylint: disable=arguments-differ,useless-super-delegation
-    def open(self, *args, **kwargs):
-        """Open instrument connection.
-        Args:
-            None
-        Returns:
-            None
-        """
-        super(AgilentVNA, self).open(*args, **kwargs)
-
-    # pylint: disable=arguments-differ,useless-super-delegation
-    def close(self):
-        """Close instrument connection.
-        Args:
-            None
-        Returns:
-            None
-        """
-        super(AgilentVNA, self).close()
-
-    def getID(self):
-        """Get identifier.
-        Args:
-            None
-        Returns:
-            str: ID
-        """
-        return str(self._querySCPI("*IDN?"))
-
-    def _writeSCPI(self, scpiStr):
-        """Perform raw SCPI write
-        Args:
-            scpiStr (str): SCPI command
-        Returns:
-            None
-        """
-        if self.verbose:
-            print(str.format("VNA.write({:s})", scpiStr))
-        self.write(scpiStr)
-
-    def _querySCPI(self, scpiStr):
-        """Perform raw SCPI query
-        Args:
-            scpiStr (str): SCPI query
-        Returns:
-            str: Query result
-        """
-        rst = self.query(scpiStr)
-        if self.verbose:
-            print(str.format("VNA.query({:s}) -> {:s}", scpiStr, rst))
-        return rst
-
-    def _queryAsciiValues(self, scpiStr):
-        """Perform SCPI query of ascii-based values
-        Args:
-            scpiStr (str): SCPI query
-        Returns:
-            rst: Numpy array
-        """
-        rst = self.resource.query_ascii_values(scpiStr, container=np.array)
-        if self.verbose:
-            print('VNA.query({0})'.format(scpiStr))
-        return rst
-
-    def _writeAsyncSCPI(self, scpiStr, delay=0.1):
-        """Perform SCPI query asynchronously for long running commands
-        Args:
-            scpiStr (str): SCPI query
-        Returns:
-            rst: Numpy array
-        """
-        self._writeSCPI('*CLS')
-        self._writeSCPI(scpiStr)
-        self._writeSCPI('*OPC')
-        isComplete = False
-        while not isComplete:
-            msg = self._querySCPI("*ESR?")
-            isComplete = (int(msg) & 0x01)
-            if not isComplete:
-                time.sleep(delay)
+class AgilentVNA(VisaResource):
+    """AgilentVNA is a convience class to control various Agilent VNAs."""
+    def __init__(self, numPorts, *args, **kwargs):
+        super(AgilentVNA, self).__init__(name='VNA', *args, **kwargs)
+        self.numPorts = numPorts
 
     def setStartFreq(self, freq_hz, channel=1):
         """Set start frequency for channel.
@@ -109,8 +20,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             None
         """
-        cmd = str.format("SENSE{:d}:FREQUENCY:START {:.0f}", channel, freq_hz)
-        self._writeSCPI(cmd)
+        self.write('SENSE{:d}:FREQUENCY:START {:.0f}'.format(channel, freq_hz))
 
     def getStartFreq(self, channel=1):
         """Get start frequency for channel.
@@ -119,9 +29,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             float: Start freq in hertz
         """
-        cmd = str.format("SENSE{:d}:FREQUENCY:START?", channel)
-        rst = float(self._querySCPI(cmd))
-        return rst
+        return self.query('SENSE{:d}:FREQUENCY:START?'.format(channel), container=float)
 
     def setStopFreq(self, freq_hz, channel=1):
         """Set stop frequency for channel.
@@ -131,8 +39,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             None
         """
-        cmd = str.format("SENSE{:d}:FREQUENCY:STOP {:.0f}", channel, freq_hz)
-        self._writeSCPI(cmd)
+        self.write('SENSE{:d}:FREQUENCY:STOP {:.0f}'.format(channel, freq_hz))
 
     def getStopFreq(self, channel=1):
         """Get stop frequency for channel.
@@ -141,9 +48,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             float: Stop freq in hertz
         """
-        cmd = str.format("SENSE{:d}:FREQUENCY:STOP?", channel)
-        rst = float(self._querySCPI(cmd))
-        return rst
+        return self.query('SENSE{:d}:FREQUENCY:STOP?'.format(channel), container=float)
 
     def setCenterFreq(self, freq_hz, channel=1):
         """Set center frequency for channel.
@@ -153,8 +58,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             None
         """
-        cmd = str.format("SENSE{:d}:FREQUENCY:CENT {:.0f}", channel, freq_hz)
-        self._writeSCPI(cmd)
+        self.write('SENSE{:d}:FREQUENCY:CENT {:.0f}'.format(channel, freq_hz))
 
     def getCenterFreq(self, channel=1):
         """Get center frequency for channel.
@@ -163,9 +67,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             float: Center freq in hertz
         """
-        cmd = str.format("SENSE{:d}:FREQUENCY:CENT?", channel)
-        rst = float(self._querySCPI(cmd))
-        return rst
+        return self.query('SENSE{:d}:FREQUENCY:CENT?'.format(channel), container=float)
 
     def setCWFreq(self, freq_hz, channel=1):
         """Set CW frequency for channel.
@@ -175,8 +77,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             None
         """
-        cmd = str.format("SENSE{:d}:FREQUENCY:CW {:.0f}", channel, freq_hz)
-        self._writeSCPI(cmd)
+        self.write('SENSE{:d}:FREQUENCY:CW {:.0f}'.format(channel, freq_hz))
 
     def getCWFreq(self, channel=1):
         """Get CW frequency for channel.
@@ -185,9 +86,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             float: CW freq in hertz
         """
-        cmd = str.format("SENSE{:d}:FREQUENCY:CW?", channel)
-        rst = float(self._querySCPI(cmd))
-        return rst
+        return self.query('SENSE{:d}:FREQUENCY:CW?'.format(channel), container=float)
 
     def setNumberSweepPoints(self, numPoints, channel=1):
         """Set number sweep points for channel.
@@ -197,8 +96,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             None
         """
-        cmd = str.format("SENSE{:d}:SWEEP:POINTS {:d}", channel, numPoints)
-        self._writeSCPI(cmd)
+        self.write('SENSE{:d}:SWEEP:POINTS {:d}'.format(channel, numPoints))
 
     def getNumberSweepPoints(self, channel=1):
         """Get number sweep points for channel.
@@ -207,9 +105,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             int: Number sweep points
         """
-        cmd = str.format("SENSE{:d}:SWEEP:POINTS?", channel)
-        rst = int(self._querySCPI(cmd))
-        return rst
+        return self.query('SENSE{:d}:SWEEP:POINTS?'.format(channel), container=int)
 
     def setFrequencyStepSize(self, freq_hz, channel=1):
         """Set freq step size for channel.
@@ -219,8 +115,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             None
         """
-        cmd = str.format("SENSE{:d}:SWEEP:STEP {1:0.}", channel, freq_hz)
-        self._writeSCPI(cmd)
+        self.write('SENSE{0}:SWEEP:STEP {1:0.}'.format(channel, freq_hz))
 
     def getFrequencyStepSize(self, channel=1):
         """Get frequency step size
@@ -229,9 +124,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             float: Frequency step size in hertz
         """
-        cmd = str.format("SENSE{:d}:SWEEP:STEP?", channel)
-        rst = float(self._querySCPI(cmd))
-        return rst
+        return self.query('SENSE{:d}:SWEEP:STEP?'.format(channel), container=float)
 
     def setSweepType(self, sweepType, channel=1):
         """Set sweep type.
@@ -242,8 +135,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             None
         """
-        cmd = str.format("SENSE{:d}:SWEEP:TYPE {:s}", channel, sweepType)
-        self._writeSCPI(cmd)
+        self.write('SENSE{:d}:SWEEP:TYPE {:s}'.format(channel, sweepType))
 
     def getSweepType(self, channel=1):
         """Get sweep type.
@@ -252,9 +144,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             str: Sweep type
         """
-        cmd = str.format("SENSE{:d}:SWEEP:TYPE?", channel)
-        rst = str(self._querySCPI(cmd))
-        return rst
+        return self.query('SENSE{:d}:SWEEP:TYPE?'.format(channel))
 
     def setBandwidth(self, bwid, channel=1):
         """Set IF bandwidth.
@@ -264,8 +154,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             None
         """
-        cmd = str.format("SENSE{0:d}:BWID {1}", channel, bwid)
-        self._writeSCPI(cmd)
+        self.write('SENSE{0:d}:BWID {1}'.format(channel, bwid))
 
     def getBandwidth(self, channel=1):
         """Get IF bandwidth.
@@ -274,9 +163,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             int: Bandwidth in hertz
         """
-        cmd = str.format("SENSE{0:d}:BWID?", channel)
-        rst = int(self._querySCPI(cmd))
-        return rst
+        return self.query('SENSE{0:d}:BWID?'.format(channel), container=int)
 
     def setSweepMode(self, mode, channel=1):
         """Set sweep mode.
@@ -286,8 +173,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             None
         """
-        cmd = str.format("SENSE{:d}:SWEEP:MODE {:s}", channel, mode)
-        self._writeSCPI(cmd)
+        self.write('SENSE{:d}:SWEEP:MODE {:s}'.format(channel, mode))
 
     def getSweepMode(self, channel=1):
         """Get sweep mode.
@@ -296,9 +182,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             str: Sweep mode
         """
-        cmd = str.format("SENSE{:d}:SWEEP:MODE?", channel)
-        rst = int(self._querySCPI(cmd))
-        return rst
+        return self.query('SENSE{:d}:SWEEP:MODE?'.format(channel))
 
     def setActiveCalSet(self, calSet, interpolate=True, applyCalStimulus=True, channel=1):
         """Select and applies cal set to specified channel
@@ -310,11 +194,12 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             None
         """
-        cmd = "SENSE{0}:CORR:INT {1}".format(channel, 'ON' if interpolate else 'OFF')
-        self._writeSCPI(cmd)
-        cmd = str.format("SENSE{0}:CORR:CSET:ACT '{1}',{2}",
-                         channel, calSet, '1' if applyCalStimulus else '0')
-        self._writeSCPI(cmd)
+        cmd = 'SENSE{0}:CORR:INT {1}'.format(channel, 'ON' if interpolate else 'OFF')
+        self.write(cmd)
+        cmd = 'SENSE{0}:CORR:CSET:ACT \'{1}\',{2}'.format(
+            channel, calSet, '1' if applyCalStimulus else '0'
+        )
+        self.write(cmd)
 
     # pylint: disable=too-many-arguments
     def setupSweep(self, startFreq, stopFreq, numPoints, sweepType="LINEAR", channel=1):
@@ -342,23 +227,23 @@ class AgilentVNA(GPIBLinkResource):
             [str]: List of trace names
         """
         # Delete all measurements
-        self._writeSCPI("CALC1:PAR:DEL:ALL")
+        self.write('CALC1:PAR:DEL:ALL')
 
-        # Turn on 4 windows
-        for i in range(1, 5):
-            self._writeSCPI(str.format("DISP:WIND{0}:STATE ON", i))
+        # Turn on N windows
+        for i in range(self.numPorts):
+            self.write('DISP:WIND{0}:STATE ON'.format(i+1))
 
-        # Create all 16 single ended s-params w/ name ch1_s{i}{j}
+        # Create all NxN single ended s-params w/ name ch1_s{i}{j}
         traceNames = []
-        for i in range(1, 5):
-            for j in range(1, 5):
-                traceName = str.format("ch1_s{0}{1}", i, j)
-                traceNames.append(traceName)
-                self._writeSCPI(str.format("CALC1:PAR:DEF 'ch1_s{0}{1}',S{0}{1}", i, j))
-                self._writeSCPI(str.format("CALC1:PAR:SEL 'ch1_s{0}{1}'", i, j))
-                self._writeSCPI(str.format("DISP:WIND{0}:TRAC{1}:FEED 'ch1_s{0}{1}'", i, j))
-
-        self._writeSCPI("TRIG:SOUR IMMediate")
+        for i in range(self.numPorts):
+            for j in range(self.numPorts):
+                tName = 'CH1_S{0}{1}'.format(i+1, j+1)
+                sName = 'S{0}{1}'.format(i+1, j+1)
+                traceNames.append(tName)
+                self.write('CALC1:PAR:DEF \'{0}\',{1}'.format(tName, sName))
+                self.write('CALC1:PAR:SEL \'{0}\''.format(tName))
+                self.write('DISP:WIND{0}:TRAC{1}:FEED \'{2}\''.format(i+1, j+1, tName))
+        self.write('TRIG:SOUR IMMediate')
         return traceNames
 
     def captureSES4PTrace(self, dtype=float, traceNames=None):
@@ -376,36 +261,36 @@ class AgilentVNA(GPIBLinkResource):
             N- Number of sweep points
         """
         # Trigger trace and wait.
-        self._writeAsyncSCPI('SENSE1:SWEEP:MODE SINGLE', delay=0.1)
+        self.writeAsync('SENSE1:SWEEP:MODE SINGLE', delay=0.1)
         numPoints = self.getNumberSweepPoints()
-        dtypeName = "SDATA" if dtype == complex else "FDATA"
-        dataQuery = str.format("CALC1:DATA? {:s}", dtypeName)
+        dtypeName = 'SDATA' if dtype == complex else 'FDATA'
+        dataQuery = 'CALC1:DATA? {:s}'.format(dtypeName)
 
         # Get only provided traces data as NxT Tensor
         if traceNames:
             s4pData = np.zeros((numPoints, len(traceNames)), dtype=dtype)
             for i, traceName in enumerate(traceNames):
-                cmd = str.format("CALC1:PAR:SEL '{0}'", traceName)
-                self._writeSCPI(cmd)
-                data = self._queryAsciiValues(dataQuery).squeeze()
+                self.write('CALC1:PAR:SEL \'{0}\''.format(traceName))
+                data = self.query(dataQuery, container=np.ndarray).squeeze()
+                # Complex is returned as alternating real,imag,...
                 if dtype == complex:
                     data = data[0::2] + 1j*data[1::2]
-                    # data.view(dtype=complex)
                 s4pData[:, i] = data
 
-        # Get all 16 traces data as NxSxS Tensor
+        # Get all SxS traces data as NxSxS Tensor
         else:
-            s4pData = np.zeros((numPoints, 4, 4), dtype=dtype)
-            for i in range(1, 5):
-                for j in range(1, 5):
-                    cmd = str.format("CALC1:PAR:SEL 'ch1_s{0}{1}'", i, j)
-                    self._writeSCPI(cmd)
-                    data = self._queryAsciiValues(dataQuery).squeeze()
+            s4pData = np.zeros(
+                (numPoints, self.numPorts, self.numPorts),
+                dtype=dtype
+            )
+            for i in range(self.numPorts):
+                for j in range(self.numPorts):
+                    self.write('CALC1:PAR:SEL \'CH1_S{0}{1}\''.format(i+1, j+1))
+                    data = self.query(dataQuery, container=np.ndarray).squeeze()
                     # Complex is returned as alternating real,imag,...
                     if dtype == complex:
                         data = data[0::2] + 1j*data[1::2]
-                        # data = data.view(dtype=complex)
-                    s4pData[:, i-1, j-1] = data
+                    s4pData[:, i, j] = data
         return s4pData
 
     def setupS4PTraces(self):
@@ -416,26 +301,29 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             None
         """
+        numDiffPairs = self.numPorts//2
+
         # Delete all measurements
-        self._writeSCPI("CALC1:PAR:DEL:ALL")
-        self._writeSCPI("CALC1:FSIM:BAL:DEV BBALANCED")
-        self._writeSCPI("CALC1:PAR:DEL:ALL")
+        self.write('CALC1:PAR:DEL:ALL')
+        self.write('CALC1:FSIM:BAL:DEV BBALANCED')
+        self.write('CALC1:PAR:DEL:ALL')
 
-        # Turn on 4 windows
-        for i in range(1, 5):
-            self._writeSCPI(str.format("DISP:WIND{0}:STATE ON", i))
+        # Turn on N windows
+        for i in range(numDiffPairs*numDiffPairs):
+            self.write(str.format("DISP:WIND{0}:STATE ON", i+1))
 
-        for i in range(1, 3):
-            for j in range(1, 3):
-                self._writeSCPI("CALC1:PAR:DEF 'sdd{0}{1}',S{0}{1}".format(i, j))
-                self._writeSCPI("CALC1:PAR:SEL 'sdd{0}{1}'".format(i, j))
-                self._writeSCPI("CALC1:FSIM:BAL:PAR:STATE ON")
-                self._writeSCPI("CALC1:FSIM:BAL:PAR:BBAL:DEF 'SDD{0}{1}'".format(i, j))
-                self._writeSCPI("DISP:WIND{0}:TRAC{0}:FEED 'sdd{1}{2}'".format(2*(i-1)+j, i, j))
+        for i in range(numDiffPairs):
+            for j in range(numDiffPairs):
+                self.write('CALC1:PAR:DEF \'sdd{0}{1}\',S{0}{1}'.format(i+1, j+1))
+                self.write('CALC1:PAR:SEL \'sdd{0}{1}\''.format(i+1, j+1))
+                self.write('CALC1:FSIM:BAL:PAR:STATE ON')
+                self.write('CALC1:FSIM:BAL:PAR:BBAL:DEF \'SDD{0}{1}\''.format(i+1, j+1))
+                self.write('DISP:WIND{0}:TRAC{0}:FEED \'sdd{1}{2}\''.format(2*i+j+1, i+1, j+1))
 
-        self._writeSCPI("CALC1:FSIM:BAL:DEV BBALANCED")
-        self._writeSCPI("CALC1:FSIM:BAL:TOP:BBAL:PPORTS 1,2,3,4")
-        self._writeSCPI("TRIG:SOUR IMMEDIATE")
+        self.write('CALC1:FSIM:BAL:DEV BBALANCED')
+        portList = ','.join([str(p+1) for p in range(self.numPorts)])
+        self.write('CALC1:FSIM:BAL:TOP:BBAL:PPORTS {0}'.format(portList))
+        self.write('TRIG:SOUR IMMEDIATE')
 
     def captureS4PTrace(self, dtype=float):
         """Convience method to capture differential sweep traces for
@@ -448,23 +336,22 @@ class AgilentVNA(GPIBLinkResource):
             S- 2 for differential mode on 4-port
             N- Number of sweep points
         """
+        numDiffPairs = self.numPorts//2
         # Trigger trace and wait.
-        self._writeAsyncSCPI('SENSE1:SWEEP:MODE SINGLE', delay=0.1)
+        self.writeAsync('SENSE1:SWEEP:MODE SINGLE', delay=0.1)
         numPoints = self.getNumberSweepPoints()
         s4pData = np.zeros((numPoints, 2, 2), dtype=dtype)
 
-        dtypeName = "SDATA" if dtype == complex else "FDATA"
-        dataQuery = str.format("CALC1:DATA? {:s}", dtypeName)
-        for i in range(1, 3):
-            for j in range(1, 3):
-                cmd = str.format("CALC1:PAR:SEL 'sdd{0}{1}'", i, j)
-                self._writeSCPI(cmd)
-                data = self._queryAsciiValues(dataQuery).squeeze()
+        dtypeName = 'SDATA' if dtype == complex else 'FDATA'
+        dataQuery = 'CALC1:DATA? {:s}'.format(dtypeName)
+        for i in range(numDiffPairs):
+            for j in range(numDiffPairs):
+                self.write('CALC1:PAR:SEL \'sdd{0}{1}\''.format(i+1, j+1))
+                data = self.query(dataQuery, container=np.ndarray).squeeze()
                 # Complex is returned as alternating real,imag,...
                 if dtype == complex:
                     data = data[0::2] + 1j*data[1::2]
-                    # data = data.view(dtype=complex)
-                s4pData[:, i-1, j-1] = data
+                s4pData[:, i, j] = data
         return s4pData
 
     def setupECalibration(self, portConnectors, portKits, portThruPairs=None, autoOrient=True):
@@ -498,25 +385,24 @@ class AgilentVNA(GPIBLinkResource):
             raise Exception('portThruPairs must be a list of even length')
 
         # Set port connector (i.e. 2.92 mm female)
-        cmd = "SENSE1:CORR:COLL:GUID:CONN:PORT"
+        cmd = 'SENSE1:CORR:COLL:GUID:CONN:PORT'
         for i, connector in enumerate(portConnectors):
-            self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, i+1, connector))
+            self.write('{:s}{:d} "{:s}"'.format(cmd, i+1, connector))
 
         # Set port e-cal kit (i.e. N4692-60003 ECal 13226)
-        cmd = "SENSE1:CORR:COLL:GUID:CKIT:PORT"
+        cmd = 'SENSE1:CORR:COLL:GUID:CKIT:PORT'
         for i, kit in enumerate(portKits):
-            self._writeSCPI(str.format('{:s}{:d} "{:s}"', cmd, i+1, kit))
+            self.write('{:s}{:d} "{:s}"'.format(cmd, i+1, kit))
 
         # Set auto orientation setting
-        cmd = str.format("SENSE1:CORR:PREF:ECAL:ORI {:s}", "ON" if autoOrient else "OFF")
-        self._writeSCPI(cmd)
+        self.write('SENSE1:CORR:PREF:ECAL:ORI {:s}'.format('ON' if autoOrient else 'OFF'))
 
         # Set port thru pairs or use default of VNA
-        self._writeSCPI("SENSE1:CORR:COLL:GUID:INIT")
+        self.write('SENSE1:CORR:COLL:GUID:INIT')
         if portThruPairs:
             thruPairDef = ','.join([str(thru) for thru in portThruPairs])
-            self._writeSCPI(str.format("SENSE1:CORR:COLL:GUID:THRU:PORTS {:s}", thruPairDef))
-            self._writeSCPI("SENSE1:CORR:COLL:GUID:INIT")
+            self.write('SENSE1:CORR:COLL:GUID:THRU:PORTS {:s}'.format(thruPairDef))
+            self.write('SENSE1:CORR:COLL:GUID:INIT')
 
     def getNumberECalSteps(self):
         """Get total number e-cal steps to be performed.
@@ -526,7 +412,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             int: Number of e-cal steps
         """
-        return int(self._querySCPI("SENSE1:CORR:COLL:GUID:STEPS?"))
+        return self.query('SENSE1:CORR:COLL:GUID:STEPS?', container=int)
 
     def getECalStepInfo(self, step):
         """Get e-cal step description.
@@ -536,7 +422,7 @@ class AgilentVNA(GPIBLinkResource):
         Returns:
             str: Description of e-cal step.
         """
-        return self._querySCPI(str.format("SENSE1:CORR:COLL:GUID:DESC? {:d}", step+1))
+        return self.query('SENSE1:CORR:COLL:GUID:DESC? {:d}'.format(step+1))
 
     def performECalStep(self, step, save=True, saveName=None, delay=2):
         """Perform e-cal step. Should be done in order.
@@ -551,20 +437,13 @@ class AgilentVNA(GPIBLinkResource):
         """
         if step >= self.getNumberECalSteps():
             return
-        self._writeSCPI("*CLS")
-        self._writeSCPI(str.format("SENSE1:CORR:COLL:GUID:ACQ STAN{:d},ASYN", step+1))
-        self._writeSCPI('*OPC')
-        isComplete = False
-        while not isComplete:
-            msg = self._querySCPI("*ESR?")
-            isComplete = (int(msg) & 0x01)
-            time.sleep(0.4)
+        self.writeAsync('SENSE1:CORR:COLL:GUID:ACQ STAN{:d},ASYN'.format(step+1), delay=0.4)
         time.sleep(delay)
         if step == (self.getNumberECalSteps()-1) and save:
             saveSuffix = 'SAVE:CSET "{:s}"'.format(saveName) if saveName else 'SAVE'
-            self._writeSCPI('SENSE1:CORR:COLL:GUID:{:s}'.format(saveSuffix))
+            self.write('SENSE1:CORR:COLL:GUID:{:s}'.format(saveSuffix))
 
-    def performECalSteps(self, save=True, saveName=None, delay=15):
+    def performECalSteps(self, save=True, saveName=None, delay=5):
         """Perform all e-cal steps as iterator.
         Must be called after setupECalibration().
         Best used for synchronous execution.
@@ -588,12 +467,12 @@ class AgilentVNA(GPIBLinkResource):
 
 
 if __name__ == '__main__':
-    print("Starting")
-    vna = AgilentVNA("TCPIP::127.0.0.1::5020::SOCKET")
-    vna.open(termChar='\n')
+    print('Started')
+    vna = AgilentVNA(busAddress="TCPIP::127.0.0.1::5020::SOCKET", numPorts=4)
+    vna.open(writeTerm='\n', readTerm='\n')
     print(vna.getID())
     vna.setupSweep(1, 20E6, 30E6, 10, "LINEAR")
     vna.setupS4PTraces()
     print(vna.captureS4PTrace())
     vna.close()
-    print("Finished")
+    print('Finished')

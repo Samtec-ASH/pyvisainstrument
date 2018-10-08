@@ -2,16 +2,12 @@
 
 Provides boilerplate for various NI-VISA instruments and utilizes pyvisa.
 
-* AgilentVNA- Tested with following instruments
-  * P...
-* SwitchMainFrame- Tested with following instruments
-  * P...
-* AgilentPowerSupply- Tested with following instruments
-  * P...
+* AgilentVNA
+* AgilentDAQ
+* AgilentPowerSupply
 
 ### Installation:  
 pip install pyvisainstruments --upgrade
-
 
 ## Contributing
 
@@ -24,8 +20,6 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 ## Maintainers
 
 - [Adam Page](adam.page@samtec.com)
-- [Chris Page](chris.page@samtec.com)
-- [Nathan Page](nathan.page@samtec.com)
 
 ## License
 

@@ -1,18 +1,18 @@
-"""GPIBLinkResource is a base class for various GPIB-based instruments
-to control via SCPI.
-"""
-from __future__ import print_function
+"""VisaResource is a base class for various VISA-style instruments."""
+import logging
 import time
 import os
 import visa
 
-class GPIBLinkResource:
-    """GPIBLinkResource is a base class for various GPIB-based instruments.
-    Attributes:
-        None
-    """
-    def __init__(self, busAddress, delay=35E-3):
+import numpy as np
+logger = logging.getLogger(__name__)
+
+class VisaResource:
+    """VisaResource is a base class for various VISA-style instruments."""
+    def __init__(self, name, busAddress, verbose=False, delay=35E-3):
+        self.name = name
         self.busAddress = busAddress
+        self.verbose = verbose
         self.resource = None
         self.isOpen = False
         self.delay = delay
@@ -61,28 +61,60 @@ class GPIBLinkResource:
             None
         """
         if not self.isOpen:
-            raise Exception("GPIBLinkResource not open")
+            raise Exception("VisaResource not open")
         time.sleep(self.delay)
+        logger.debug('%s:WRITE %s', self.name, cmd)
         self.resource.write(cmd)
 
-    def query(self, cmd, maxAttempts=3):
+    def writeAsync(self, cmd, delay=0.1):
+        """Perform SCPI command asynchronously for long running commands.
+        Note: This still blocks current thread just not device.
+        Args:
+            cmd (str): SCPI command
+        Returns:
+            rst: Numpy array
+        """
+        self.write('*CLS')
+        self.write(cmd)
+        self.write('*OPC')
+        isComplete = False
+        while not isComplete:
+            msg = self.query('*ESR?')
+            isComplete = (int(msg) & 0x01)
+            if not isComplete:
+                time.sleep(delay)
+
+    def query(self, cmd, container=str, maxAttempts=3):
         """Perform raw SCPI query with retries
         Args:
             cmd (str): SCPI query
+            container: str, float, bool, np.array
             maxAttempts (int): Number of attempts
         Returns:
             str: Query result
         """
         if not self.isOpen:
-            raise Exception("GPIBLinkResource not open")
+            raise Exception("VisaResource not open")
         err = Exception('Failed to perform query')
         for attempts in range(maxAttempts):
             try:
-                rst = self.resource.query(cmd, delay=self.delay)
+                # Special case for arrays
+                if container in [np.ndarray, np.array, list]:
+                    rst = self.resource.query_ascii_values(cmd, container=container)
+                    if self.verbose:
+                        logger.debug('%s:QUERY %s -> Array', self.name, cmd)
+                else:
+                    rst = self.resource.query(cmd, delay=self.delay)
+                    if self.verbose:
+                        logger.debug('%s:QUERY %s -> %s', self.name, cmd, rst)
+                    if container is bool:
+                        rst = rst.lower() not in ['0', 'false', 'no']
+                    else:
+                        rst = container(rst)
                 return rst
             # pylint: disable=broad-except
             except Exception as curErr:
-                print(str.format('Query attempt {:d} failed.', attempts))
+                logger.warning('Query attempt %d of %d failed.', attempts+1, maxAttempts)
                 err = curErr
         raise err
 
@@ -95,8 +127,19 @@ class GPIBLinkResource:
         """
         if not self.isOpen:
             # pylint: disable=broad-except
-            raise Exception("GPIBLinkResource not open")
-        return self.resource.read(delay=self.delay)
+            raise Exception("VisaResource not open")
+        rst = self.resource.read(delay=self.delay)
+        if self.verbose:
+            logger.debug('%s:READ %s', self.name, rst)
+
+    def getID(self):
+        """Get identifier.
+        Args:
+            None
+        Returns:
+            str: ID
+        """
+        return self.query('*IDN?')
 
     @staticmethod
     def GetSerialBusAddress(deviceID, baudRate=None, readTerm=None, writeTerm=None):
@@ -112,7 +155,6 @@ class GPIBLinkResource:
         """
         ni_backend = os.getenv('NI_VISA_PATH', '@ni')
         asrlInstrs = visa.ResourceManager(ni_backend).list_resources('ASRL?*::INSTR')
-        print(asrlInstrs)
         for addr in asrlInstrs:
             inst = None
             try:
@@ -124,7 +166,7 @@ class GPIBLinkResource:
                 if writeTerm:
                     inst.write_termination = writeTerm
                 inst.timeout = 2000
-                instID = inst.query("*IDN?", delay=100e-3)
+                instID = inst.query('*IDN?', delay=100e-3)
                 inst.clear()
                 inst.close()
                 if deviceID in instID:

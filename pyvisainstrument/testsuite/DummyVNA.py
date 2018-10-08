@@ -1,13 +1,13 @@
 # pylint: skip-file
-
 import numpy as np
 from pyvisainstrument.testsuite.DummyTCPInstrument import DummyTCPInstrument
 
 
 class DummyVNA(DummyTCPInstrument):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, numPorts=4, *args, **kwargs):
         super(DummyVNA, self).__init__(*args, **kwargs)
+        self.numPorts = numPorts
         self.state = {
             "*CLS": self.clearStatus,
             "*RST": self.reset,
@@ -220,21 +220,3 @@ class DummyVNA(DummyTCPInstrument):
             else:
                 print("Unknown command", prst, pcmd, rst)
                 return None
-
-
-def runDummyVNA():
-    try:
-        TCP_IP = '127.0.0.1'
-        TCP_PORT = 5020
-        baseArgs = dict(tcpAddress=TCP_IP, tcpPort=TCP_PORT, termStr='\n', bufferSize=1024)
-        instr = DummyVNA(**baseArgs)
-        instr.open()
-        instr.run()
-    except:
-        pass
-    finally:
-        instr.close()
-
-
-if __name__ == "__main__":
-    runDummyVNA()

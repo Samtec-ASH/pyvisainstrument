@@ -1,15 +1,15 @@
-
 # pylint: skip-file
-
 import re
 from pyvisainstrument.testsuite.DummyTCPInstrument import DummyTCPInstrument
 
 
 class DummyDAQ(DummyTCPInstrument):
 
-    def __init__(self, numPorts, numChannels, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(DummyDAQ, self).__init__(*args, **kwargs)
-        self.params = dict(numPorts=numPorts, numChannels=numChannels)
+        self.numSlots = kwargs['numSlots']
+        self.numChannels = kwargs['numChannels']
+        openState = ['{:01d}{:02d}'.format(p+1, c+1) for p in range(self.numSlots) for c in range(self.numChannels)]
         self.state = {
             "*CLS": self.clearStatus,
             "*RST": self.reset,
@@ -17,7 +17,7 @@ class DummyDAQ(DummyTCPInstrument):
             "*OPC": "1",
             "*ESR": "1",
             "ROUTE": {
-                "OPEN": [str.format("{:01d}{:02d}", p+1, c+1) for p in range(numPorts) for c in range(numChannels)],
+                "OPEN": openState,
                 "CLOSE": [],
                 "DONE": "1"
             }
@@ -39,9 +39,9 @@ class DummyDAQ(DummyTCPInstrument):
             return False
         p = int(route[0])
         c = int(route[1:3])
-        numPorts = self.params["numPorts"]
-        numChannels = self.params["numChannels"]
-        isValid = (p > 0) and (p <= numPorts) and (c > 0) and (c <= numChannels)
+        numSlots = self.numSlots
+        numChannels = self.numChannels
+        isValid = (p > 0) and (p <= numSlots) and (c > 0) and (c <= numChannels)
         return isValid
 
     def setChannel(self, route, asClosed):
@@ -100,21 +100,3 @@ class DummyDAQ(DummyTCPInstrument):
             else:
                 print("Unknown command")
                 return None
-
-
-def runDummyDAQ():
-    try:
-        TCP_IP = '127.0.0.1'
-        TCP_PORT = 5021
-        baseArgs = dict(tcpAddress=TCP_IP, tcpPort=TCP_PORT, termStr='\n', bufferSize=1024)
-        instr = DummyDAQ(numPorts=3, numChannels=20, **baseArgs)
-        instr.open()
-        instr.run()
-    except:
-        pass
-    finally:
-        instr.close()
-
-
-if __name__ == "__main__":
-    runDummyDAQ()

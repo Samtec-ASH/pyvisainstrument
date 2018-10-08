@@ -1,55 +1,16 @@
-
-"""SwitchMainFrame is a convience class to control various Agilent Switch DAQs.
-"""
-
+"""AgilentDAQ is a convience class to control various Agilent Switch DAQs."""
 from __future__ import print_function
 import time
-from pyvisainstrument.GPIBLink import GPIBLinkResource
+from pyvisainstrument.VisaResource import VisaResource
 
 # pylint: disable=too-many-public-methods
-class SwitchMainFrame(GPIBLinkResource):
-    """SwitchMainFrame is a convience class to control various Agilent Switch DAQs.
-    Attributes:
-        None
-    """
+class AgilentDAQ(VisaResource):
+    """AgilentDAQ is a convience class to control various Agilent Switch DAQs."""
     # pylint: disable=too-many-arguments
-    def __init__(self, busLinkAddress, numSlots, numChannels, delay=15e-3, verbose=False):
-        super(SwitchMainFrame, self).__init__(busAddress=busLinkAddress)
-        self.verbose = verbose
-        self.busLinkAddress = busLinkAddress
-        self.resourceLink = None
+    def __init__(self, numSlots, numChannels, *args, **kwargs):
+        super(AgilentDAQ, self).__init__(name='DAQ', *args, **kwargs)
         self.numSlots = numSlots
         self.numChannels = numChannels
-        self.delay = delay
-
-    # pylint: disable=arguments-differ,useless-super-delegation
-    def open(self, *args, **kwargs):
-        """Open instrument connection.
-        Args:
-            None
-        Returns:
-            None
-        """
-        super(SwitchMainFrame, self).open(*args, **kwargs)
-
-    # pylint: disable=arguments-differ,useless-super-delegation
-    def close(self):
-        """Close instrument connection.
-        Args:
-            None
-        Returns:
-            None
-        """
-        super(SwitchMainFrame, self).close()
-
-    def getID(self):
-        """Get identifier.
-        Args:
-            None
-        Returns:
-            str: ID
-        """
-        return str(self._querySCPI("*IDN?"))
 
     def isChannelClosed(self, channel):
         """Get if channel is closed.
@@ -58,9 +19,7 @@ class SwitchMainFrame(GPIBLinkResource):
         Returns:
             bool: True if channel is closed
         """
-        cmd = str.format("ROUT:CLOS? (@{:03d})", channel)
-        rst = self._querySCPI(cmd)
-        return rst == '1'
+        return self.query('ROUT:CLOS? (@{:03d})'.format(channel)) == '1'
 
     def isChannelOpen(self, channel):
         """Get if channel is open.
@@ -136,8 +95,7 @@ class SwitchMainFrame(GPIBLinkResource):
         Returns:
             None
         """
-        cmd = str.format("ROUT:OPEN (@{:03d})", channel)
-        self._writeSCPI(cmd)
+        self.write('ROUT:OPEN (@{:03d})'.format(channel))
         time.sleep(delay)
 
     def closeChannel(self, channel, delay=0):
@@ -151,11 +109,10 @@ class SwitchMainFrame(GPIBLinkResource):
         Returns:
             None
         """
-        cmd = str.format("ROUT:CLOS (@{:03d})", channel)
-        self._writeSCPI(cmd)
+        self.write('ROUT:CLOS (@{:03d})'.format(channel))
         time.sleep(delay)
 
-    def _waitForCompletion(self, timeout=2):
+    def waitForCompletion(self, timeout=2):
         """Wait for physical operation to complete.
         Args:
             timeout (float):
@@ -167,42 +124,22 @@ class SwitchMainFrame(GPIBLinkResource):
         waitTime = 0.0
         while not done:
             time.sleep(15E-3)
-            doneStr = self._querySCPI("ROUT:DONE?")
+            doneStr = self.resource.query('ROUT:DONE?', delay=15E-3)
             if isinstance(doneStr, str) and doneStr.strip().isnumeric():
                 done = int(doneStr.strip())
             waitTime += 15E-3
             if waitTime >= timeout:
                 raise Exception("waitForCompletion:timeout")
 
-    def _writeSCPI(self, scpiStr):
-        """Perform raw SCPI write
-        Args:
-            scpiStr (str): SCPI command
-        Returns:
-            None
-        """
-        if self.verbose:
-            print(str.format("DAQ.write({:s})", scpiStr))
-        self.write(scpiStr)
-        self._waitForCompletion()
-
-    def _querySCPI(self, scpiStr):
-        """Perform raw SCPI query
-        Args:
-            scpiStr (str): SCPI query
-        Returns:
-            str: Query result
-        """
-        rst = self.query(scpiStr)
-        if self.verbose:
-            print(str.format("DAQ.query({:s}) -> {:s}", scpiStr, rst))
-        return rst
-
 
 if __name__ == '__main__':
-    print("Starting")
-    daq = SwitchMainFrame("TCPIP::127.0.0.1::5020::SOCKET", 3, 20)
-    daq.open(baudRate=None, termChar='\n')
+    print('Started')
+    daq = AgilentDAQ(
+        busAddress='TCPIP::127.0.0.1::5020::SOCKET',
+        numSlots=3,
+        numChannels=20
+    )
+    daq.open(baudRate=None, readTerm='\n', writeTerm='\n')
     daq.openAllChannels(1)
     daq.openChannels([101, 103, 105])
     daq.closeChannels([101, 103, 105])

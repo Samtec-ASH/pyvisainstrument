@@ -143,20 +143,3 @@ class DummyPS(DummyTCPInstrument):
             return self.processQuery(stateHead, stateLeaf, pcmd, params)
         else:
             return self.processWrite(stateHead, stateLeaf, pcmd, params)
-
-
-def runDummyPS():
-    try:
-        TCP_IP = '127.0.0.1'
-        TCP_PORT = 5022
-        baseArgs = dict(tcpAddress=TCP_IP, tcpPort=TCP_PORT, termStr='\n', bufferSize=1024)
-        instr = DummyPS(**baseArgs)
-        instr.open()
-        instr.run()
-    except:
-        pass
-    finally:
-        instr.close()
-
-if __name__ == "__main__":
-    runDummyPS()
