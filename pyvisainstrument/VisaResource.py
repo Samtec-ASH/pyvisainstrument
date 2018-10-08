@@ -5,7 +5,7 @@ import os
 import visa
 
 import numpy as np
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('VISA')
 
 class VisaResource:
     """VisaResource is a base class for various VISA-style instruments."""

@@ -108,8 +108,7 @@ class DummyPS(DummyTCPInstrument):
         elif type(value) in [str, int, float, bool]:
             return str(value)
         else:
-            print("Unknown query")
-            return str("-100")
+            return '-100'
 
     def processWrite(self, state, value, cmd, params):
         if callable(value):
@@ -120,8 +119,7 @@ class DummyPS(DummyTCPInstrument):
                 state[cmd] = castType(params[0])
             return None
         else:
-            print("Unknown command")
-            return None
+            raise Exception('Unknown command')
 
     def processCommand(self, cmdTree, params, isQuery):
         mappedCmdTree = [self.mapCommands.get(cmd, cmd) for cmd in cmdTree]

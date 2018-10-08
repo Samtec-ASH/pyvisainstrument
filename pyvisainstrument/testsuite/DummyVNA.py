@@ -203,12 +203,11 @@ class DummyVNA(DummyTCPInstrument):
             if type(rst) in [str, int, float, bool]:
                 return str(rst)
             elif type(rst) is None:
-                return str("")
+                return ''
             elif callable(rst):
                 return rst(params, True)
             else:
-                print("Unknown query")
-                return str("-100")
+                return '-100'
         else:
             if callable(rst):
                 rst(params, False)
@@ -218,5 +217,4 @@ class DummyVNA(DummyTCPInstrument):
                     prst[pcmd] = castType(params[0])
                 return None
             else:
-                print("Unknown command", prst, pcmd, rst)
-                return None
+                raise Exception('Unknown command')

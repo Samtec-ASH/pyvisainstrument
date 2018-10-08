@@ -84,8 +84,7 @@ class DummyDAQ(DummyTCPInstrument):
             elif callable(rst):
                 return rst(params, True)
             else:
-                print("Unknown query")
-                return str("-100")
+                return '-100'
         else:
             # For rout:open @() and rout:clos? @()
             if type(rst) is list and len(params):
@@ -98,5 +97,4 @@ class DummyDAQ(DummyTCPInstrument):
             elif callable(rst):
                 return rst(params, False)
             else:
-                print("Unknown command")
-                return None
+                raise Exception('Unknown command')
