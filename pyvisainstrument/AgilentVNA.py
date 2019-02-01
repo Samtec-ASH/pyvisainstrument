@@ -1,6 +1,7 @@
 """AgilentVNA is a convience class to control various Agilent VNAs."""
 from __future__ import print_function
 import time
+import itertools
 import numpy as np
 from pyvisainstrument.VisaResource import VisaResource
 
@@ -218,9 +219,12 @@ class AgilentVNA(VisaResource):
         self.setNumberSweepPoints(numPoints, channel=channel)
         self.setSweepType(sweepType, channel=channel)
 
-    def setupSES4PTraces(self):
-        """Convience method to setup single-ended sweep traces for all
-        16 s-params. Should be called after setting sweep params and mode.
+    def setupSES4PTraces(self, portPairs=None):
+        return self.setupSESTraces(portPairs=portPairs)
+
+    def setupSESTraces(self, portPairs=None):
+        """Convience method to setup single-ended sweep traces.
+        Should be called after setting sweep params and mode.
         Args:
             None
         Returns:
@@ -229,16 +233,22 @@ class AgilentVNA(VisaResource):
         # Delete all measurements
         self.write('CALC1:PAR:DEL:ALL')
 
-        # Turn on N windows
-        for i in range(self.numPorts):
+        if portPairs and len(portPairs) != 2:
+            raise ValueError('portPairs must have length 2')
+        # Default to all NxN pairs
+        if portPairs is None:
+            portPairs = 2*[list(range(self.numPorts))]
+
+        # Turn on windows
+        for i, a in enumerate(portPairs[0]):
             self.write('DISP:WIND{0}:STATE ON'.format(i+1))
 
-        # Create all NxN single ended s-params w/ name ch1_s{i}{j}
+        # Create all single ended s-params w/ name ch1_s{i}{j}
         traceNames = []
-        for i in range(self.numPorts):
-            for j in range(self.numPorts):
-                tName = 'CH1_S{0}{1}'.format(i+1, j+1)
-                sName = 'S{0}{1}'.format(i+1, j+1)
+        for i, a in enumerate(portPairs[0]):
+            for j, b in enumerate(portPairs[1]):
+                tName = 'CH1_S{0}{1}'.format(a+1, b+1)
+                sName = 'S{0}{1}'.format(a+1, b+1)
                 traceNames.append(tName)
                 self.write('CALC1:PAR:DEF \'{0}\',{1}'.format(tName, sName))
                 self.write('CALC1:PAR:SEL \'{0}\''.format(tName))
@@ -246,10 +256,12 @@ class AgilentVNA(VisaResource):
         self.write('TRIG:SOUR IMMediate')
         return traceNames
 
-    def captureSES4PTrace(self, dtype=float, traceNames=None):
-        """Convience method to capture single-ended sweep traces for all
-        SE s-params or those provided as input.
-        Should be called after setupSES4PTraces().
+    def captureSES4PTrace(self, dtype=float, traceNames=None, portPairs=None):
+        return self.captureSESTrace(dtype=dtype, traceNames=traceNames, portPairs=portPairs)
+
+    def captureSESTrace(self, dtype=float, traceNames=None, portPairs=None):
+        """Convience method to capture single-ended sweep traces.
+        Should be called after setupSESTraces().
         Args:
             dtype: Data format either float or complex
             traceNames: Name of traces to capture
@@ -257,41 +269,40 @@ class AgilentVNA(VisaResource):
             Numpy.array: Numpy tensor with shape NxT if traceNames
             else NxSxS otherwise.
             T- Number of supplied traces
-            S- 4 for single ended mode on 4-port
-            N- Number of sweep points
+            N- 4 for single ended mode on 4-port
+            F- Number of sweep points
         """
         # Trigger trace and wait.
         self.writeAsync('SENSE1:SWEEP:MODE SINGLE', delay=0.1)
         numPoints = self.getNumberSweepPoints()
         dtypeName = 'SDATA' if dtype == complex else 'FDATA'
         dataQuery = 'CALC1:DATA? {:s}'.format(dtypeName)
-
-        # Get only provided traces data as NxT Tensor
+        # Get only provided traces data as FxT Tensor
         if traceNames:
-            s4pData = np.zeros((numPoints, len(traceNames)), dtype=dtype)
+            sData = np.zeros((numPoints, len(traceNames)), dtype=dtype)
             for i, traceName in enumerate(traceNames):
                 self.write('CALC1:PAR:SEL \'{0}\''.format(traceName))
                 data = self.query(dataQuery, container=np.ndarray).squeeze()
                 # Complex is returned as alternating real,imag,...
                 if dtype == complex:
                     data = data[0::2] + 1j*data[1::2]
-                s4pData[:, i] = data
+                sData[:, i] = data
 
-        # Get all SxS traces data as NxSxS Tensor
+        # Get all single-ended s-params
         else:
-            s4pData = np.zeros(
-                (numPoints, self.numPorts, self.numPorts),
-                dtype=dtype
-            )
-            for i in range(self.numPorts):
-                for j in range(self.numPorts):
-                    self.write('CALC1:PAR:SEL \'CH1_S{0}{1}\''.format(i+1, j+1))
+            # Default to all NxN pairs
+            if portPairs is None:
+                portPairs = 2*[list(range(self.numPorts))]
+            sData = np.zeros((numPoints, len(portPairs[0]), len(portPairs[1])), dtype=dtype)
+            for i, a in enumerate(portPairs[0]):
+                for j, b in enumerate(portPairs[1]):
+                    self.write('CALC1:PAR:SEL \'CH1_S{0}{1}\''.format(a+1, b+1))
                     data = self.query(dataQuery, container=np.ndarray).squeeze()
                     # Complex is returned as alternating real,imag,...
                     if dtype == complex:
                         data = data[0::2] + 1j*data[1::2]
-                    s4pData[:, i, j] = data
-        return s4pData
+                    sData[:, i, j] = data
+        return sData
 
     def setupS4PTraces(self):
         """Convience method to setup differential sweep traces for all

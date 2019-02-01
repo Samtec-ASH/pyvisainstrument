@@ -13,7 +13,7 @@ class TestAgilentVNA:
         self.device = DummyVNA(numPorts=4, busAddress=instAddr)
         self.device.open(readTerm='\n', writeTerm='\n')
         self.device.start()
-        self.vna = AgilentVNA(numPorts=4, busAddress=instAddr, delay=0)
+        self.vna = AgilentVNA(numPorts=4, busAddress=instAddr, delay=2e-2)
         self.vna.open(readTerm='\n', writeTerm='\n')
 
     def teardown_class(self):
@@ -45,6 +45,10 @@ class TestAgilentVNA:
         stopFreq = self.vna.getStopFreq()
         sweepPoints = self.vna.getNumberSweepPoints()
         sweepType = self.vna.getSweepType()
+        portPairs = [[0,2],[0,2]]
+        traceNames = self.vna.setupSESTraces(portPairs=portPairs)
+        sData = self.vna.captureSESTrace(dtype=complex, portPairs=portPairs)
+        print(sData)
         assert startFreq == 1E7
         assert stopFreq == 2E10
         assert sweepPoints == 2000
