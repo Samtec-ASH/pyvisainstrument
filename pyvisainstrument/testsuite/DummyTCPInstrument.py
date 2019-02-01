@@ -48,10 +48,14 @@ class DummyTCPInstrument(threading.Thread):
         self.logger.debug('Connection address: {0}'.format(addr))
         self.connected = True
         while self.connected:
-            data = self.conn.recv(self.bufferSize)
-            if data:
-                self.processPacket(self.conn, data)
-            else:
+            try:
+                data = self.conn.recv(self.bufferSize)
+                if data:
+                    self.processPacket(self.conn, data)
+                else:
+                    self.logger.debug('Disconnected from address: {0}'.format(addr))
+                    self.connected = False
+            except Exception:
                 self.logger.debug('Disconnected from address: {0}'.format(addr))
                 self.connected = False
         self.conn.close()

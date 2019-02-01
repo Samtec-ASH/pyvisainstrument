@@ -1,7 +1,6 @@
 """AgilentVNA is a convience class to control various Agilent VNAs."""
 from __future__ import print_function
 import time
-import itertools
 import numpy as np
 from pyvisainstrument.VisaResource import VisaResource
 
@@ -220,6 +219,7 @@ class AgilentVNA(VisaResource):
         self.setSweepType(sweepType, channel=channel)
 
     def setupSES4PTraces(self, portPairs=None):
+        """Obsolete: Use setupSESTraces instead."""
         return self.setupSESTraces(portPairs=portPairs)
 
     def setupSESTraces(self, portPairs=None):
@@ -257,6 +257,7 @@ class AgilentVNA(VisaResource):
         return traceNames
 
     def captureSES4PTrace(self, dtype=float, traceNames=None, portPairs=None):
+        """Obsolete: Use captureSESTrace instead."""
         return self.captureSESTrace(dtype=dtype, traceNames=traceNames, portPairs=portPairs)
 
     def captureSESTrace(self, dtype=float, traceNames=None, portPairs=None):
