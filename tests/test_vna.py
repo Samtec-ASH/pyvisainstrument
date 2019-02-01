@@ -37,7 +37,7 @@ class TestAgilentVNA:
         self.vna.setupSweep(
             1E7,
             2E10,
-            2000,
+            20,
             sweepType="LINEAR",
             channel=1
         )
@@ -51,7 +51,7 @@ class TestAgilentVNA:
         print(sData)
         assert startFreq == 1E7
         assert stopFreq == 2E10
-        assert sweepPoints == 2000
+        assert sweepPoints == 20
         assert sweepType == "LINEAR"
 
     def test_performEcal(self):
