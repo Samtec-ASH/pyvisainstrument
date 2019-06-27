@@ -5,9 +5,10 @@ Provides boilerplate for various NI-VISA instruments and utilizes pyvisa.
 * AgilentVNA
 * AgilentDAQ
 * AgilentPowerSupply
+* NumatoRelay (TCP/TELNET and USB)
 
-### Installation:  
-pip install pyvisainstruments --upgrade
+### Installation:
+pip install -U pyvisainstrument
 
 ## Contributing
 
