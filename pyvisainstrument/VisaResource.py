@@ -3,7 +3,6 @@ import logging
 import time
 import os
 import visa
-
 import numpy as np
 logger = logging.getLogger('VISA')
 

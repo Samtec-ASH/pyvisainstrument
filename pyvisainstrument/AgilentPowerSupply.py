@@ -1,10 +1,10 @@
-"""AgilentPowerSupply is a convience class to control various Agilent power supplies."""
+"""AgilentPowerSupply is a convenience class to control various Agilent power supplies."""
 from __future__ import print_function
 from pyvisainstrument.VisaResource import VisaResource
 
 # pylint: disable=too-many-public-methods
 class AgilentPowerSupply(VisaResource):
-    """AgilentPowerSupply is a convience class to control various Agilent power supplies."""
+    """AgilentPowerSupply is a convenience class to control various Agilent power supplies."""
     def __init__(self, *args, **kwargs):
         super(AgilentPowerSupply, self).__init__(name='PS', *args, **kwargs)
 

@@ -1,11 +1,11 @@
-"""AgilentDAQ is a convience class to control various Agilent Switch DAQs."""
+"""AgilentDAQ is a convenience class to control various Agilent Switch DAQs."""
 from __future__ import print_function
 import time
 from pyvisainstrument.VisaResource import VisaResource
 
 # pylint: disable=too-many-public-methods
 class AgilentDAQ(VisaResource):
-    """AgilentDAQ is a convience class to control various Agilent Switch DAQs."""
+    """AgilentDAQ is a convenience class to control various Agilent Switch DAQs."""
     # pylint: disable=too-many-arguments
     def __init__(self, numSlots, numChannels, *args, **kwargs):
         super(AgilentDAQ, self).__init__(name='DAQ', *args, **kwargs)
