@@ -1,29 +1,40 @@
+"""NumatoRelay is a convenience class to control various Numato Lab Relay Modules."""
+import time
 from telnetlib import Telnet
 import serial
-import time
+
 
 class NumatoRelay:
     """NumatoRelay is a convenience class to control various Numato Lab Relay Modules."""
     # pylint: disable=too-many-arguments
     def __init__(self, name, busAddress, numSlots, numChannels, verbose=False, delay=20e-3):
         self.name = name
-        # busAddress is formated like GPIB device DEVICE_TYPE::ADDRESS such as TCP::127.0.0.0 or USB::/dev/ttyACMO
+        # busAddress is formated like GPIB device DEVICE_TYPE::ADDRESS
+        # such as TCP::127.0.0.0 or USB::/dev/ttyACMO
         addressParts = busAddress.split('::') if '::' in busAddress else ['USB', busAddress]
         self.deviceType = addressParts[0].upper().strip()
         self.busAddress = addressParts[1]
         self.resource = None
-        self.isOpen = False
         self.delay = delay
         self.numSlots = 1 or numSlots # Only have 1 slot
         self.numChannels = numChannels
 
-    def open(self, readTerm=None, writeTerm=None, baudRate=None, user='admin', password='admin'):
+    def open(self, readTerm=None, writeTerm=None, baudRate=19200, user='admin', password='admin'):
+        """Open instrument connection.
+        Args:
+            baudRate (int, optional): Baud rate in hertz
+            readTerm (str, optional): Read termination chars
+            writeTerm (str, optional): Write termination chars
+            user (str, optional): username for TCP comm.
+            password (str, optional): password for TCP comm.
+        Returns:
+            None
+        """
         # USB device
         if 'USB' in self.deviceType:
-            self.resource = serial.Serial(self.busAddress, 19200, timeout=1)
+            self.resource = serial.Serial(self.busAddress, baudRate, timeout=1)
             self.resource.reset_input_buffer()
             self.resource.reset_output_buffer()
-            self.isOpen = True
         # For Telnet (TCP) based modules
         elif 'TCP' in self.deviceType:
             self.resource = Telnet(self.busAddress, timeout=1)
@@ -33,16 +44,18 @@ class NumatoRelay:
                 self.resource.read_until(b"Password: ")
                 self.resource.write(f'{password}\n\r'.encode('ascii'))
             self.resource.read_until(b"\r\n>")
-            self.isOpen = True
         else:
             raise ValueError(f'Unsupported device type: {self.deviceType}')
 
-        # TODO: Handle usb/serial based modules
-
     def close(self):
+        """Clear and close instrument connection.
+        Args:
+            None
+        Returns:
+            None
+        """
         if self.resource:
             self.resource.close()
-        self.isOpen = False
 
     def getChannelState(self, channel):
         """Get channel state.
@@ -67,6 +80,12 @@ class NumatoRelay:
         return idx
 
     def isChannelClosed(self, channel):
+        """Check if channel is closed.
+        Args:
+            channel (int): Channel index
+        Returns:
+            bool: True if channel is open
+        """
         return self.getChannelState(channel) == 1
 
     def isChannelOpen(self, channel):
@@ -77,7 +96,6 @@ class NumatoRelay:
             bool: True if channel is open
         """
         return self.getChannelState(channel) == 0
-
 
     def openAllChannels(self, slotIdx=1, delay=0):
         """Open all channels of a slot.
@@ -117,6 +135,11 @@ class NumatoRelay:
             self.closeChannel(ch, delay)
 
     def setChannel(self, channel, on, delay):
+        """Set specified channel on or off.
+        Args:
+            channel (int): Channel index
+            delay (int, optional): Delay after operation (default 0).
+        """
         if 'USB' in self.deviceType:
             self.resource.write(f"relay {'on' if on else 'off'} {channel}\n\r".encode('ascii'))
             self.resource.reset_input_buffer()

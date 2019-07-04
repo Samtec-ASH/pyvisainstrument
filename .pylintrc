@@ -2,4 +2,4 @@
 
 [MESSAGES CONTROL]
 
-disable=invalid-name
+disable=invalid-name,unused-argument
