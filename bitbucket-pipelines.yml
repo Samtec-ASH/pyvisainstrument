@@ -10,8 +10,8 @@ pipelines:
         script:
           - pip install pipenv
           - pipenv install --deploy --system --dev
-          - pytest
           - pylint --rcfile .pylintrc pyvisainstrument
+          - NI_VISA_PATH='@py' pytest
     - step:
         name: Deploy to test
         deployment: test
@@ -21,8 +21,8 @@ pipelines:
         script:
           - pip install pipenv
           - pipenv install --deploy --system --dev
-          - pytest
           - pylint --rcfile .pylintrc pyvisainstrument
+          - NI_VISA_PATH='@py' pytest
     - step:
         name: Deploy to staging
         deployment: staging
