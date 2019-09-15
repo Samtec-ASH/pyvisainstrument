@@ -1,9 +1,10 @@
 """AgilentVNA is a convience class to control various Agilent VNAs."""
 from __future__ import print_function
 import time
+import logging
 import numpy as np
 from pyvisainstrument.VisaResource import VisaResource
-
+logger = logging.getLogger('VISA')
 
 # pylint: disable=too-many-public-methods
 class AgilentVNA(VisaResource):
@@ -163,7 +164,7 @@ class AgilentVNA(VisaResource):
         Returns:
             int: Bandwidth in hertz
         """
-        return self.query('SENSE{0:d}:BWID?'.format(channel), container=int)
+        return int(self.query('SENSE{0:d}:BWID?'.format(channel), container=float))
 
     def setSweepMode(self, mode, channel=1):
         """Set sweep mode.
@@ -223,7 +224,7 @@ class AgilentVNA(VisaResource):
         return self.setupSESTraces(portPairs=portPairs)
 
     def setupSESTraces(self, portPairs=None):
-        """Convience method to setup single-ended sweep traces.
+        """Convenience method to setup single-ended sweep traces.
         Should be called after setting sweep params and mode.
         Args:
             None
@@ -260,8 +261,8 @@ class AgilentVNA(VisaResource):
         """Obsolete: Use captureSESTrace instead."""
         return self.captureSESTrace(dtype=dtype, traceNames=traceNames, portPairs=portPairs)
 
-    def captureSESTrace(self, dtype=float, traceNames=None, portPairs=None):
-        """Convience method to capture single-ended sweep traces.
+    def captureSESTrace(self, dtype=float, traceNames=None, portPairs=None, dataFormat='real', bigEndian=True):
+        """Convenience method to capture single-ended sweep traces.
         Should be called after setupSESTraces().
         Args:
             dtype: Data format either float or complex
@@ -275,6 +276,14 @@ class AgilentVNA(VisaResource):
         """
         # Trigger trace and wait.
         self.writeAsync('SENSE1:SWEEP:MODE SINGLE', delay=0.1)
+
+        # Set data format to be either 'real,32' (binary), 'real,64' (binary), or 'ascii,0'
+        is_binary_fmt = dataFormat.startswith('real')
+        is_64_bit = '64' in dataFormat
+        fmt = 'REAL' if is_binary_fmt else 'ASCii'
+        bits = '64' if is_64_bit else '32' if is_binary_fmt else '0'
+        self.write(f'FORM:DATA {fmt},{bits}') # Read data as binary or ascii (binary preferred)
+
         numPoints = self.getNumberSweepPoints()
         dtypeName = 'SDATA' if dtype == complex else 'FDATA'
         dataQuery = 'CALC1:DATA? {:s}'.format(dtypeName)
@@ -283,7 +292,17 @@ class AgilentVNA(VisaResource):
             sData = np.zeros((numPoints, len(traceNames)), dtype=dtype)
             for i, traceName in enumerate(traceNames):
                 self.write('CALC1:PAR:SEL \'{0}\''.format(traceName))
-                data = self.query(dataQuery, container=np.ndarray).squeeze()
+                if is_binary_fmt:
+                    datatype = 'd' if is_64_bit else 'f'
+                    chunk_size = numPoints*100 # 2000*1024
+                    data = self.resource.query_binary_values(
+                        dataQuery, is_big_endian=bigEndian, datatype=datatype,
+                        container=np.array, chunk_size=chunk_size
+                    )
+                    if self.verbose:
+                        logger.debug('%s:QUERY %s -> BINARY_ARRAY', self.name, dataQuery)
+                else:
+                    data = self.query(dataQuery, container=np.ndarray).squeeze()
                 # Complex is returned as alternating real,imag,...
                 if dtype == complex:
                     data = data[0::2] + 1j*data[1::2]
@@ -298,15 +317,26 @@ class AgilentVNA(VisaResource):
             for i, a in enumerate(portPairs[0]):
                 for j, b in enumerate(portPairs[1]):
                     self.write('CALC1:PAR:SEL \'CH1_S{0}{1}\''.format(a+1, b+1))
-                    data = self.query(dataQuery, container=np.ndarray).squeeze()
+                    if is_binary_fmt:
+                        datatype = 'd' if is_64_bit else 'f'
+                        chunk_size = numPoints*100 # 2000*1024
+                        data = self.resource.query_binary_values(
+                            dataQuery, is_big_endian=bigEndian, datatype=datatype,
+                            container=np.array, chunk_size=chunk_size
+                        )
+                        if self.verbose:
+                            logger.debug('%s:QUERY %s -> BINARY_ARRAY', self.name, dataQuery)
+                    else:
+                        data = self.query(dataQuery, container=np.ndarray).squeeze()
                     # Complex is returned as alternating real,imag,...
                     if dtype == complex:
                         data = data[0::2] + 1j*data[1::2]
                     sData[:, i, j] = data
+        self.write('*CLS')  # Clean up
         return sData
 
     def setupS4PTraces(self):
-        """Convience method to setup differential sweep traces for all
+        """Convenience method to setup differential sweep traces for all
         diff s-params. Should be called after setting sweep params and mode.
         Args:
             None
@@ -338,7 +368,7 @@ class AgilentVNA(VisaResource):
         self.write('TRIG:SOUR IMMEDIATE')
 
     def captureS4PTrace(self, dtype=float):
-        """Convience method to capture differential sweep traces for
+        """Convenience method to capture differential sweep traces for
         all diff s-params SDD11, SDD12, SDD21, & SDD22.
         Should be called after setupS4PTraces().
         Args:
