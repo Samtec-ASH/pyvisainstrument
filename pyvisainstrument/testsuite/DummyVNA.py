@@ -8,6 +8,7 @@ class DummyVNA(DummyTCPInstrument):
     def __init__(self, numPorts=4, *args, **kwargs):
         super(DummyVNA, self).__init__(*args, **kwargs)
         self.numPorts = numPorts
+        self.cmdTree = None
         self.state = {
             "*CLS": self.clearStatus,
             "*RST": self.reset,
@@ -167,15 +168,22 @@ class DummyVNA(DummyTCPInstrument):
             PORT3='PORT3', PORT4='PORT4',
             THRU='THRU', STEPS='STEPS',
             SOUR='SOURCE', SOURCE='SOURCE',
-            CSET='CSET', INT='INTERPOLATE'
+            CSET='CSET', INT='INTERPOLATE',
+            SNP='SNP'
         )
 
     def _getData(self, params, isQuery):
         if isQuery:
-            isComplex = len(params) and (params[0] in ["RDATA", "SDATA"])
             numPoints = int(self.state["SENSE"]["SWEEP"]["POINTS"])
-            if isComplex:
-                numPoints = 2*numPoints
+            # CALC:DATA:SNP:PORTs 1,2,3,4?
+            if self.cmdTree and 'SNP' in self.cmdTree:
+                nPorts = len(params[0].split(',')) if len(params) else self.numPorts
+                #           freq + S11r,i + S12r,i, ... S22r,i ... SNNr,i
+                numPoints = numPoints + numPoints*(nPorts**2)*2
+            else:
+                isComplex = len(params) and (params[0] in ["RDATA", "SDATA"])
+                if isComplex:
+                    numPoints = 2*numPoints
             data = np.random.rand(numPoints)
             dataStr = ",".join('{:+.6E}'.format(v) for v in data)
             return dataStr
@@ -187,6 +195,7 @@ class DummyVNA(DummyTCPInstrument):
         return
 
     def processCommand(self, cmdTree, params, isQuery):
+        self.cmdTree = cmdTree
         rst = self.state
         prst = None
         pcmd = None
@@ -196,6 +205,8 @@ class DummyVNA(DummyTCPInstrument):
                 prst = rst
                 pcmd = mappedCmd
                 rst = rst[mappedCmd]
+                if callable(rst):
+                    break
             else:
                 break
 

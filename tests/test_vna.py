@@ -45,10 +45,11 @@ class TestAgilentVNA:
         stopFreq = self.vna.getStopFreq()
         sweepPoints = self.vna.getNumberSweepPoints()
         sweepType = self.vna.getSweepType()
-        portPairs = [[0,2],[0,2]]
-        # traceNames = self.vna.setupSESTraces(portPairs=portPairs)
+        portPairs = [[0,1,2,3],[0,1,2,3]]
+        traceNames = self.vna.setupSESTraces(portPairs=portPairs)
         # sData = self.vna.captureSESTrace(dtype=complex, portPairs=portPairs)
-        # print(sData)
+        freq, sData = self.vna.captureSnPData(ports=[0, 1, 2, 3], dformat='ascii')
+        print(sData.shape)
         assert startFreq == 1E7
         assert stopFreq == 2E10
         assert sweepPoints == 20
