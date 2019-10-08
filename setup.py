@@ -8,7 +8,7 @@ long_description = ('PyVisaInstrument provides boilerplate for various NI-VISA i
                     '...')
 
 setup(name='PyVisaInstrument',
-      version='0.13.0',
+      version='0.13.1',
       description=short_description,
       long_description=long_description,
       maintainer='Adam Page',

@@ -351,15 +351,15 @@ class AgilentVNA(VisaResource):
     def captureSnPData(self, ports=None, dformat='real', bigendian=True):
         """Convenience method to capture port data as RI.
         Args:
-            ports: list of desired ports (base-1 index)
+            ports: list of desired ports (base-0 index)
             dformat: Data format for transfer: 'ascii', 'real', 'real,32', 'real,64'
         Returns:
             freq: np.array [npoints]
-            sdata: np.array [npoints x given ports x VNA ports]
+            sdata: np.array [npoints x  nports x nports]
         """
         if ports is None:
-            ports = list(range(1, 1+self.numPorts))
-
+            ports = list(range(self.numPorts))
+        nports = len(ports)
         # Trigger trace and wait.
         self.writeAsync('SENSE1:SWEEP:MODE SINGLE', delay=0.150)
         # Read back real,imag format
@@ -367,17 +367,17 @@ class AgilentVNA(VisaResource):
         self.setDataFormat(dformat)
         npoints = self.getNumberSweepPoints()
         # Capture port data
-        dquery = f"CALC:DATA:SNP:PORTs? \"{','.join(str(p) for p in ports)}\""
-        chunksize = npoints*len(ports)*self.numPorts*8*2
+        dquery = f"CALC:DATA:SNP:PORTs? \"{','.join(str(int(p)+1) for p in ports)}\""
+        chunksize = npoints*nports*nports*8*2
         data = self.query(
             dquery, container=np.array, dformat=dformat, bigendian=bigendian, chunksize=chunksize
         )
         # Reshape 1-d array to 3-d tensor
         freq = data[:npoints]
-        sdata = np.zeros((npoints, len(ports), self.numPorts), dtype=np.complex)
-        for r in range(len(ports)):
-            for c in range(self.numPorts):
-                r_idx = npoints + 2*npoints*r*self.numPorts + 2*npoints*c
+        sdata = np.zeros((npoints, nports, nports), dtype=np.complex)
+        for r in range(nports):
+            for c in range(nports):
+                r_idx = npoints + 2*npoints*nports*r + 2*npoints*c
                 i_idx = r_idx + npoints
                 sdata[:, r, c] = data[r_idx:i_idx]+1j*data[i_idx:i_idx+npoints]
         self.write('*CLS')  # Clean up
