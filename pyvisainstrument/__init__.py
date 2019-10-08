@@ -1,7 +1,7 @@
 
 """PyVisaInstrument provides boilerplate for various NI-VISA instruments."""
 
-__version__ = '0.11.0'
+__version__ = '0.13.0'
 
 from pyvisainstrument.VisaResource import VisaResource
 from pyvisainstrument.AgilentPowerSupply import AgilentPowerSupply

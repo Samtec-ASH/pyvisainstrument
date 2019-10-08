@@ -83,7 +83,8 @@ class VisaResource:
             if not isComplete:
                 time.sleep(delay)
 
-    def query(self, cmd, container=str, maxAttempts=3):
+    def query(self, cmd, container=str, maxAttempts=3, dformat='ASCii,0',
+              bigendian=True, chunksize=None):
         """Perform raw SCPI query with retries
         Args:
             cmd (str): SCPI query
@@ -99,7 +100,14 @@ class VisaResource:
             try:
                 # Special case for arrays
                 if container in [np.ndarray, np.array, list]:
-                    rst = self.resource.query_ascii_values(cmd, container=container)
+                    if dformat.upper().startswith('REAL'):
+                        datatype = 'd' if '64' in dformat else 'f'
+                        rst = self.resource.query_binary_values(
+                            cmd, is_big_endian=bigendian, datatype=datatype,
+                            container=np.array, chunk_size=chunksize
+                        )
+                    else:
+                        rst = self.resource.query_ascii_values(cmd, container=container)
                     if self.verbose:
                         logger.debug('%s:QUERY %s -> Array', self.name, cmd)
                 else:

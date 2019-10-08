@@ -7,7 +7,7 @@ from pyvisainstrument import AgilentDAQ
 
 class NumatoRelay(AgilentDAQ):
     """NumatoRelay is a convenience class to control various Numato Lab Relay Modules."""
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,super-init-not-called
     def __init__(self, name, busAddress, numSlots, numChannels, verbose=False, delay=20e-3):
         self.name = name
         # busAddress is formated like GPIB device DEVICE_TYPE::ADDRESS
@@ -22,6 +22,7 @@ class NumatoRelay(AgilentDAQ):
         self.read_termination = None
         self.write_termination = None
 
+    # pylint: disable=arguments-differ
     def open(self, readTerm=None, writeTerm=None, baudRate=19200, user='admin', password='admin'):
         """Open instrument connection.
         Args:
@@ -72,7 +73,8 @@ class NumatoRelay(AgilentDAQ):
                 msg = self.query(f"relay read {channel}")
                 self._clear_buffer()
                 idx = 1 if 'on' in msg else 0 if 'off' in msg else -1
-                if idx == 0 or idx == 1: return idx
+                if idx in (0, 1):
+                    return idx
             except Exception as e:
                 err = e
         raise Exception(f'Failed to get channel state {msg}. {err}')
@@ -106,7 +108,9 @@ class NumatoRelay(AgilentDAQ):
             self.closeChannel(ch, delay)
 
     def setChannel(self, channel, on, delay, numAttempts=3):
-        """Set specified {channel} (int) on or off w/ {delay} (Optional[int]) and {numAttempts} (int)."""
+        """Set specified {channel} (int) on or off w/ {delay}
+            (Optional[int]) and {numAttempts} (int).
+        """
         err = None
         for _ in range(numAttempts):
             try:
@@ -138,7 +142,9 @@ class NumatoRelay(AgilentDAQ):
     def read(self):
         """Read from resource """
         if 'TCP' in self.deviceType:
-            return self.resource.read_until(f'{self.read_termination}>'.encode('ascii'), timeout=1).decode()
+            return self.resource.read_until(
+                f'{self.read_termination}>'.encode('ascii'), timeout=1
+            ).decode()
         return self.resource.read_until(f'{self.read_termination}>'.encode('ascii')).decode()
 
     def write(self, cmd, reset_input=True):

@@ -261,7 +261,8 @@ class AgilentVNA(VisaResource):
         """Obsolete: Use captureSESTrace instead."""
         return self.captureSESTrace(dtype=dtype, traceNames=traceNames, portPairs=portPairs)
 
-    def captureSESTrace(self, dtype=float, traceNames=None, portPairs=None, dataFormat='real', bigEndian=True):
+    def captureSESTrace(self, dtype=float, traceNames=None, portPairs=None,
+                        dataFormat='real', bigEndian=True):
         """Convenience method to capture single-ended sweep traces.
         Should be called after setupSESTraces().
         Args:
@@ -334,6 +335,53 @@ class AgilentVNA(VisaResource):
                     sData[:, i, j] = data
         self.write('*CLS')  # Clean up
         return sData
+
+    def setTraceFormat(self, fmt='RI'):
+        """fmt: MA, DB, RI, AUTO"""
+        self.write(f'MMEM:STOR:TRAC:FORM:SNP {fmt}')
+
+    def setDataFormat(self, dformat='real'):
+        """ Set data format to be 'real,32' (binary), 'real,64' (binary), or 'ascii,0' """
+        is_binary_fmt = dformat.startswith('real')
+        is_64_bit = '64' in dformat
+        fmt = 'REAL' if is_binary_fmt else 'ASCii'
+        bits = '64' if is_64_bit else '32' if is_binary_fmt else '0'
+        self.write(f'FORM:DATA {fmt},{bits}') # Read data as binary or ascii (binary preferred)
+
+    def captureSnPData(self, ports=None, dformat='real', bigendian=True):
+        """Convenience method to capture port data as RI.
+        Args:
+            ports: list of desired ports (base-1 index)
+            dformat: Data format for transfer: 'ascii', 'real', 'real,32', 'real,64'
+        Returns:
+            freq: np.array [npoints]
+            sdata: np.array [npoints x given ports x VNA ports]
+        """
+        if ports is None:
+            ports = list(range(1, 1+self.numPorts))
+
+        # Trigger trace and wait.
+        self.writeAsync('SENSE1:SWEEP:MODE SINGLE', delay=0.150)
+        # Read back real,imag format
+        self.setTraceFormat('RI')
+        self.setDataFormat(dformat)
+        npoints = self.getNumberSweepPoints()
+        # Capture port data
+        dquery = f"CALC:DATA:SNP:PORTs? \"{','.join(str(p) for p in ports)}\""
+        chunksize = npoints*len(ports)*self.numPorts*8*2
+        data = self.query(
+            dquery, container=np.array, dformat=dformat, bigendian=bigendian, chunksize=chunksize
+        )
+        # Reshape 1-d array to 3-d tensor
+        freq = data[:npoints]
+        sdata = np.zeros((npoints, len(ports), self.numPorts), dtype=np.complex)
+        for r in range(len(ports)):
+            for c in range(self.numPorts):
+                r_idx = npoints + 2*npoints*r*self.numPorts + 2*npoints*c
+                i_idx = r_idx + npoints
+                sdata[:, r, c] = data[r_idx:i_idx]+1j*data[i_idx:i_idx+npoints]
+        self.write('*CLS')  # Clean up
+        return freq, sdata
 
     def setupS4PTraces(self):
         """Convenience method to setup differential sweep traces for all
