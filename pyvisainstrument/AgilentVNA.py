@@ -278,12 +278,8 @@ class AgilentVNA(VisaResource):
         # Trigger trace and wait.
         self.writeAsync('SENSE1:SWEEP:MODE SINGLE', delay=0.1)
 
-        # Set data format to be either 'real,32' (binary), 'real,64' (binary), or 'ascii,0'
-        is_binary_fmt = dataFormat.startswith('real')
-        is_64_bit = '64' in dataFormat
-        fmt = 'REAL' if is_binary_fmt else 'ASCii'
-        bits = '64' if is_64_bit else '32' if is_binary_fmt else '0'
-        self.write(f'FORM:DATA {fmt},{bits}') # Read data as binary or ascii (binary preferred)
+        # Set data format
+        self.setDataFormat(dataFormat)
 
         numPoints = self.getNumberSweepPoints()
         dtypeName = 'SDATA' if dtype == complex else 'FDATA'
@@ -293,15 +289,12 @@ class AgilentVNA(VisaResource):
             sData = np.zeros((numPoints, len(traceNames)), dtype=dtype)
             for i, traceName in enumerate(traceNames):
                 self.write('CALC1:PAR:SEL \'{0}\''.format(traceName))
-                if is_binary_fmt:
-                    datatype = 'd' if is_64_bit else 'f'
-                    chunk_size = numPoints*100 # 2000*1024
-                    data = self.resource.query_binary_values(
-                        dataQuery, is_big_endian=bigEndian, datatype=datatype,
-                        container=np.array, chunk_size=chunk_size
+                if dataFormat.startswith('real'):
+                    chunkSize = numPoints*100 # 2000*1024
+                    data = self.query(
+                        dataQuery, container=np.array, dformat=dataFormat,
+                        bigendian=bigEndian, chunksize=chunkSize
                     )
-                    if self.verbose:
-                        logger.debug('%s:QUERY %s -> BINARY_ARRAY', self.name, dataQuery)
                 else:
                     data = self.query(dataQuery, container=np.ndarray).squeeze()
                 # Complex is returned as alternating real,imag,...
@@ -318,15 +311,12 @@ class AgilentVNA(VisaResource):
             for i, a in enumerate(portPairs[0]):
                 for j, b in enumerate(portPairs[1]):
                     self.write('CALC1:PAR:SEL \'CH1_S{0}{1}\''.format(a+1, b+1))
-                    if is_binary_fmt:
-                        datatype = 'd' if is_64_bit else 'f'
-                        chunk_size = numPoints*100 # 2000*1024
-                        data = self.resource.query_binary_values(
-                            dataQuery, is_big_endian=bigEndian, datatype=datatype,
-                            container=np.array, chunk_size=chunk_size
+                    if dataFormat.startswith('real'):
+                        chunkSize = numPoints*100 # 2000*1024
+                        data = self.query(
+                            dataQuery, container=np.array, dformat=dataFormat,
+                            bigendian=bigEndian, chunksize=chunkSize
                         )
-                        if self.verbose:
-                            logger.debug('%s:QUERY %s -> BINARY_ARRAY', self.name, dataQuery)
                     else:
                         data = self.query(dataQuery, container=np.ndarray).squeeze()
                     # Complex is returned as alternating real,imag,...
@@ -368,7 +358,7 @@ class AgilentVNA(VisaResource):
         npoints = self.getNumberSweepPoints()
         # Capture port data
         dquery = f"CALC:DATA:SNP:PORTs? \"{','.join(str(int(p)+1) for p in ports)}\""
-        chunksize = npoints*nports*nports*8*2
+        chunksize = npoints*nports*nports*10*2
         data = self.query(
             dquery, container=np.array, dformat=dformat, bigendian=bigendian, chunksize=chunksize
         )

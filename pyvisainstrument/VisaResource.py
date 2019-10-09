@@ -121,7 +121,7 @@ class VisaResource:
                 return rst
             # pylint: disable=broad-except
             except Exception as curErr:
-                logger.warning('Query attempt %d of %d failed.', attempts+1, maxAttempts)
+                logger.warning('Query attempt %d of %d failed for <%s>.', attempts+1, maxAttempts, cmd)
                 err = curErr
         raise err
 
@@ -150,7 +150,7 @@ class VisaResource:
 
     @staticmethod
     def GetSerialBusAddress(deviceID, baudRate=None, readTerm=None, writeTerm=None):
-        """Convience static method to auto-detect USB serial device by checking if
+        """Convenience static method to auto-detect USB serial device by checking if
         provided deviceID is in *IDN result.
         Args:
             deviceID (str): Device ID to search for
