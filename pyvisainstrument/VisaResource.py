@@ -121,7 +121,10 @@ class VisaResource:
                 return rst
             # pylint: disable=broad-except
             except Exception as curErr:
-                logger.warning('Query attempt %d of %d failed for <%s>.', attempts+1, maxAttempts, cmd)
+                logger.warning(
+                    'Query attempt %d of %d failed for <%s>.',
+                    attempts+1, maxAttempts, cmd
+                )
                 err = curErr
         raise err
 
