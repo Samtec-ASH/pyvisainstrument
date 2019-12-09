@@ -1,23 +1,23 @@
-"""AgilentPowerSupply is a convenience class to control various Agilent power supplies."""
+"""KeysightPSU is a convenience class to control various Keysight power supplies."""
 from __future__ import print_function
+from typing import Union
 from pyvisainstrument.VisaResource import VisaResource
 
-# pylint: disable=too-many-public-methods
-class AgilentPowerSupply(VisaResource):
-    """AgilentPowerSupply is a convenience class to control various Agilent power supplies."""
-    def __init__(self, *args, **kwargs):
-        super(AgilentPowerSupply, self).__init__(name='PS', *args, **kwargs)
 
-    def setChannel(self, ch):
+class KeysightPSU(VisaResource):
+    """KeysightPSU is a convenience class to control various Keysight power supplies."""
+
+    def __init__(self, *args, **kwargs):
+        super(KeysightPSU, self).__init__(name='PS', *args, **kwargs)
+
+    def set_channel(self, ch: Union[str, int]):
         """Select channel for mult-channel PS.
         Args:
             ch (str, int): Channel name or index
-        Returns:
-            None
         """
-        self.write('INST:SEL {0}'.format(ch))
+        self.write(f'INST:SEL {ch}')
 
-    def getChannel(self):
+    def get_channel(self):
         """Get selected channel for mult-channel PS.
         Args:
             None
@@ -27,46 +27,33 @@ class AgilentPowerSupply(VisaResource):
         return str(self.query('INST:SEL?'))
 
     def enable(self):
-        """Enable output state.
-        Args:
-            None
-        Returns:
-            None
-        """
-        self.setOutputState(True)
+        """Enable output state. """
+        self.set_output_state(True)
 
     def disable(self):
-        """Disable output state.
-        Args:
-            None
-        Returns:
-            None
-        """
-        self.setOutputState(False)
+        """Disable output state. """
+        self.set_output_state(False)
 
-    def apply(self, ch, volt, curr, precision=2):
+    def apply(self, ch: Union[str, int], volt: float, curr: float, precision=2):
         """Quickly apply power supply settings.
         Args:
             ch (str): Channel name
             volt (float): Voltage in volts
             curr (float): Current in amperes
             precision (int): Precision of voltage and current
-        Returns:
-            None
         """
-        cmd = 'APPL {0}, {1:0.{3}f}, {2:0.{3}f}'.format(ch, volt, curr, precision)
-        self.write(cmd)
+        self.write(f'APPL {ch}, {volt:0.{precision}f}, {curr:0.{precision}f}')
 
-    def setOutputState(self, state):
+    def set_output_state(self, state: bool):
         """Enable or disable output.
         Args:
             state (bool): Output state
         Returns:
             None
         """
-        self.write('OUTP:STAT ON' if state else 'OUTP:STAT OFF')
+        self.write(f"OUTP:STAT {'ON' if state else 'OFF'}")
 
-    def getOutputState(self):
+    def get_output_state(self):
         """Get output state.
         Args:
             None
@@ -75,7 +62,7 @@ class AgilentPowerSupply(VisaResource):
         """
         return self.query('OUTP:STAT?') == '1'
 
-    def setVoltageSetPoint(self, voltage, precision=2):
+    def set_voltage_set_point(self, voltage: float, precision: int = 2):
         """Set voltage setpoint
         Args:
             volt (float): Voltage in volts
@@ -83,9 +70,9 @@ class AgilentPowerSupply(VisaResource):
         Returns:
             None
         """
-        self.write('VOLT {1:0.{0}f}'.format(precision, voltage))
+        self.write(f'VOLT {voltage:0.{precision}f}')
 
-    def getVoltageSetPoint(self):
+    def get_voltage_set_point(self):
         """Get voltage setpoint
         Args:
             None
@@ -94,7 +81,7 @@ class AgilentPowerSupply(VisaResource):
         """
         return float(self.query('VOLT?'))
 
-    def setCurrentLimit(self, current, precision=2):
+    def set_current_limit(self, current: float, precision: int = 2):
         """Set current limit
         Args:
             current (float): Current in amperes
@@ -102,9 +89,9 @@ class AgilentPowerSupply(VisaResource):
         Returns:
             None
         """
-        self.write('CURR {1:0.{0}f}'.format(precision, current))
+        self.write(f'CURR {current:0.{precision}f}')
 
-    def getCurrentLimit(self):
+    def get_current_limit(self):
         """Get current limit
         Args:
             None
@@ -113,7 +100,7 @@ class AgilentPowerSupply(VisaResource):
         """
         return float(self.query('CURR?'))
 
-    def getMeasuredVoltage(self):
+    def get_measured_voltage(self):
         """Get measured voltage
         Args:
             None
@@ -122,7 +109,7 @@ class AgilentPowerSupply(VisaResource):
         """
         return float(self.query('MEAS:VOLT:DC?'))
 
-    def getMeasuredCurrent(self):
+    def get_measured_current(self):
         """Get measured current usage
         Args:
             None
@@ -131,7 +118,7 @@ class AgilentPowerSupply(VisaResource):
         """
         return float(self.query('MEAS:CURR:DC?'))
 
-    def getMaxVoltage(self):
+    def get_max_voltage(self):
         """Get max voltage of PS channel
         Args:
             None
@@ -140,7 +127,7 @@ class AgilentPowerSupply(VisaResource):
         """
         return float(self.query('VOLT? MAX'))
 
-    def getMinVoltage(self):
+    def get_min_voltage(self):
         """Get min voltage of PS channel
         Args:
             None
@@ -149,7 +136,7 @@ class AgilentPowerSupply(VisaResource):
         """
         return float(self.query('VOLT? MIN'))
 
-    def getMaxCurrentLimit(self):
+    def get_max_current_limit(self):
         """Get max current limit of PS channel
         Args:
             None
@@ -158,7 +145,7 @@ class AgilentPowerSupply(VisaResource):
         """
         return float(self.query('CURR? MAX'))
 
-    def getMinCurrentLimit(self):
+    def get_min_current_limit(self):
         """Get min current limit of PS channel
         Args:
             None
@@ -167,16 +154,16 @@ class AgilentPowerSupply(VisaResource):
         """
         return float(self.query('CURR? MIN'))
 
-    def setDisplayText(self, txt):
+    def set_display_text(self, txt: str):
         """Set display text
         Args:
             txt (str): Text to display
         Returns:
             None
         """
-        self.write('DISP:TEXT:DATA \"{0}\"'.format(txt))
+        self.write(f'DISP:TEXT:DATA \"{txt}\"')
 
-    def clearDisplayText(self):
+    def clear_display_text(self):
         """Clear display text
         Args:
             None
@@ -185,7 +172,7 @@ class AgilentPowerSupply(VisaResource):
         """
         self.write('DISP:TEXT:CLEA')
 
-    def getDisplayText(self):
+    def get_display_text(self):
         """Get display text
         Args:
             None
@@ -197,13 +184,13 @@ class AgilentPowerSupply(VisaResource):
 
 if __name__ == '__main__':
     print('Started')
-    ps = AgilentPowerSupply(busAddress='TCPIP::127.0.0.1::5020::SOCKET')
+    ps = KeysightPSU(bus_address='TCPIP::127.0.0.1::5020::SOCKET')
     ps.open()
-    ps.setChannel(1)
+    ps.set_channel(1)
     ps.enable()
-    ps.setCurrentLimit(2)
-    ps.setVoltageSetPoint(5.0)
-    print(ps.getCurrentLimit())
-    print(ps.getVoltageSetPoint())
+    ps.set_current_limit(2)
+    ps.set_voltage_set_point(5.0)
+    print(ps.get_current_limit())
+    print(ps.get_voltage_set_point())
     ps.disable()
     print('Finished')

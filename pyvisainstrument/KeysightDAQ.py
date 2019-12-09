@@ -1,62 +1,59 @@
-"""AgilentDAQ is a convenience class to control various Agilent Switch DAQs."""
+"""KeysightDAQ is a convenience class to control various Keysight Switch DAQs."""
 from __future__ import print_function
+from typing import List
 import time
 from pyvisainstrument.VisaResource import VisaResource
 
-# pylint: disable=too-many-public-methods
-class AgilentDAQ(VisaResource):
-    """AgilentDAQ is a convenience class to control various Agilent Switch DAQs."""
-    # pylint: disable=too-many-arguments
-    def __init__(self, numSlots, numChannels, *args, **kwargs):
-        super(AgilentDAQ, self).__init__(name='DAQ', *args, **kwargs)
-        self.numSlots = numSlots
-        self.numChannels = numChannels
 
-    def isChannelClosed(self, channel):
+class KeysightDAQ(VisaResource):
+    """KeysightDAQ is a convenience class to control various Keysight Switch DAQs."""
+
+    def __init__(self, num_slots, num_channels, *args, **kwargs):
+        super(KeysightDAQ, self).__init__(name='DAQ', *args, **kwargs)
+        self.num_slots = num_slots
+        self.num_channels = num_channels
+
+    def is_channel_closed(self, channel: int):
         """Get if channel is closed.
         Args:
             channel (int): Actuator with format SCC
         Returns:
             bool: True if channel is closed
         """
-        return self.query('ROUT:CLOS? (@{:03d})'.format(channel)) == '1'
+        return self.query(f'ROUT:CLOS? (@{channel:03d})') == '1'
 
-    def isChannelOpen(self, channel):
+    def is_channel_open(self, channel: int):
         """Get if channel is open.
         Args:
             channel (int): Actuator with format SCC
         Returns:
             bool: True if channel is open
         """
-        return not self.isChannelClosed(channel)
+        return not self.is_channel_closed(channel)
 
-    def openAllChannels(self, slotIdx, delay=0):
+    def open_all_channels(self, slot: int, delay=0):
         """Open all channels of a slot.
         Args:
-            slotIdx (int): Slot index (1-based)
-        Returns:
-            None
+            slot int: Slot (1-based)
         """
-        for i in range(self.numChannels):
-            chIdx = 100*slotIdx + (i+1)
-            self.openChannel(chIdx)
+        for i in range(self.num_channels):
+            ch = 100 * slot + (i + 1)
+            self.open_channel(ch)
             time.sleep(delay)
 
-    def closeAllChannels(self, slotIdx, delay=0):
+    def close_all_channels(self, slot: int, delay: float = 0):
         """Close all channels of a slot.
         Args:
-            slotIdx (int): Slot index (1-based)
-            delay (int, optional):
+            slot (int): Slot (1-based)
+            delay (float, optional):
                 Delay between each channel operation.
                 Default is 0 - no delay
-        Returns:
-            None
         """
-        for i in range(self.numChannels):
-            chIdx = 100*slotIdx + (i+1)
-            self.closeChannel(chIdx, delay)
+        for i in range(self.num_channels):
+            ch = 100 * slot + (i + 1)
+            self.close_channel(ch, delay)
 
-    def openChannels(self, channels, delay=0):
+    def open_channels(self, channels: List[int], delay: float = 0):
         """Open specified channels.
         Args:
             channels ([int]):
@@ -68,9 +65,9 @@ class AgilentDAQ(VisaResource):
             None
         """
         for ch in channels:
-            self.openChannel(ch, delay)
+            self.open_channel(ch, delay)
 
-    def closeChannels(self, channels, delay=0):
+    def close_channels(self, channels: List[int], delay: float = 0):
         """Close specified channels.
         Args:
             channels ([int]):
@@ -82,9 +79,9 @@ class AgilentDAQ(VisaResource):
             None
         """
         for ch in channels:
-            self.closeChannel(ch, delay)
+            self.close_channel(ch, delay)
 
-    def openChannel(self, channel, delay=0):
+    def open_channel(self, channel: int, delay: float = 0):
         """Open specified channel.
         Args:
             channel (int):
@@ -95,10 +92,10 @@ class AgilentDAQ(VisaResource):
         Returns:
             None
         """
-        self.write('ROUT:OPEN (@{:03d})'.format(channel))
+        self.write(f'ROUT:OPEN (@{channel:03d})')
         time.sleep(delay)
 
-    def closeChannel(self, channel, delay=0):
+    def close_channel(self, channel: int, delay: float = 0):
         """Close specified channel.
         Args:
             channel (int):
@@ -109,10 +106,10 @@ class AgilentDAQ(VisaResource):
         Returns:
             None
         """
-        self.write('ROUT:CLOS (@{:03d})'.format(channel))
+        self.write(f'ROUT:CLOS (@{channel:03d})')
         time.sleep(delay)
 
-    def waitForCompletion(self, timeout=2):
+    def wait_for_completion(self, timeout: float = 2):
         """Wait for physical operation to complete.
         Args:
             timeout (float):
@@ -121,26 +118,26 @@ class AgilentDAQ(VisaResource):
             Exception if timeout reached
         """
         done = False
-        waitTime = 0.0
+        wait_time = 0.0
         while not done:
             time.sleep(15E-3)
-            doneStr = self.resource.query('ROUT:DONE?', delay=15E-3)
-            if isinstance(doneStr, str) and doneStr.strip().isnumeric():
-                done = int(doneStr.strip())
-            waitTime += 15E-3
-            if waitTime >= timeout:
-                raise Exception("waitForCompletion:timeout")
+            done_str = self.resource.query('ROUT:DONE?', delay=15E-3)
+            if isinstance(done_str, str) and done_str.strip().isnumeric():
+                done = int(done_str.strip())
+            wait_time += 15E-3
+            if wait_time >= timeout:
+                raise Exception('Timeout occurred waiting for route to finish.')
 
 
 if __name__ == '__main__':
     print('Started')
-    daq = AgilentDAQ(
+    daq = KeysightDAQ(
         busAddress='TCPIP::127.0.0.1::5020::SOCKET',
-        numSlots=3,
-        numChannels=20
+        num_slots=3,
+        num_channels=20
     )
-    daq.open(baudRate=None, readTerm='\n', writeTerm='\n')
-    daq.openAllChannels(1)
-    daq.openChannels([101, 103, 105])
-    daq.closeChannels([101, 103, 105])
+    daq.open(baud_rate=None, read_term='\n', write_term='\n')
+    daq.open_all_channels(1)
+    daq.open_channels([101, 103, 105])
+    daq.close_channels([101, 103, 105])
     print("Finished")
