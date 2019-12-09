@@ -2,6 +2,7 @@
 # pylint: skip-file
 from pyvisainstrument.testsuite.DummyTCPInstrument import DummyTCPInstrument
 
+
 class DummyPS(DummyTCPInstrument):
 
     def __init__(self, *args, **kwargs):
@@ -14,7 +15,7 @@ class DummyPS(DummyTCPInstrument):
         self.state = {
             "*IDN": "PS",
             "*OPC": "1",
-            "*CLS": self.clearStatus,
+            "*CLS": self.clear_status,
             "*RST": self.reset,
             "*ESR": "1",
             1: {
@@ -35,12 +36,12 @@ class DummyPS(DummyTCPInstrument):
                 "VOLTAGE": dict(MIN="0", MAX="24", SET="0"),
                 "CURRENT": dict(MIN="0", MAX="5", SET="5")
             },
-            "VOLTAGE": self._voltageSetPointHandler,
-            "CURRENT": self._currentLimitHandler,
+            "VOLTAGE": self._voltage_set_point_handler,
+            "CURRENT": self._current_limit_handler,
             "DISPLAY": dict(TEXT=dict(DATA="", CLEAR=None)),
             "INSTRUMENT": dict(NSELECT=1, SELECT="P6V")
         }
-        self.mapCommands = dict(
+        self.map_commands = dict(
             APPL='APPLY', APPLY='APPLY',
             INST='INSTRUMENT', INSTRUMENT='INSTRUMENT',
             MEAS='MEASURE', MEASURE='MEASURE',
@@ -74,33 +75,33 @@ class DummyPS(DummyTCPInstrument):
             VERS='VERSION', VERSION='VERSION'
         )
 
-    def _voltageSetPointHandler(self, params, isQuery):
-        if isQuery:
-            fieldName = params[0] if len(params) else "SET"
-            return self.state[int(self._currInst())]["VOLTAGE"][fieldName]
+    def _voltage_set_point_handler(self, params, is_query):
+        if is_query:
+            field_name = params[0] if len(params) else "SET"
+            return self.state[int(self._curr_inst())]["VOLTAGE"][field_name]
         else:
-            self.state[int(self._currInst())]["VOLTAGE"]["SET"] = params[0]
-            self.state[int(self._currInst())]["MEASURE"]["VOLTAGE"]["DC"] = params[0]
+            self.state[int(self._curr_inst())]["VOLTAGE"]["SET"] = params[0]
+            self.state[int(self._curr_inst())]["MEASURE"]["VOLTAGE"]["DC"] = params[0]
             return None
 
-    def _currentLimitHandler(self, params, isQuery):
-        if isQuery:
-            fieldName = params[0] if len(params) else "SET"
-            return self.state[int(self._currInst())]["CURRENT"][fieldName]
+    def _current_limit_handler(self, params, is_query):
+        if is_query:
+            field_name = params[0] if len(params) else "SET"
+            return self.state[int(self._curr_inst())]["CURRENT"][field_name]
         else:
-            self.state[int(self._currInst())]["CURRENT"]["SET"] = params[0]
+            self.state[int(self._curr_inst())]["CURRENT"]["SET"] = params[0]
             return None
 
-    def _currInst(self):
+    def _curr_inst(self):
         return self.state["INSTRUMENT"]["NSELECT"]
 
-    def clearStatus(self, params, isQuery):
+    def clear_status(self, params, is_query):
         return
 
-    def reset(self, params, isQuery):
+    def reset(self, params, is_query):
         return
 
-    def processQuery(self, state, value, cmd, params):
+    def process_query(self, state, value, cmd, params):
         if callable(value):
             return value(params, True)
         elif isinstance(value, dict) and len(params):
@@ -110,7 +111,7 @@ class DummyPS(DummyTCPInstrument):
         else:
             return '-100'
 
-    def processWrite(self, state, value, cmd, params):
+    def process_write(self, state, value, cmd, params):
         if callable(value):
             return value(params, False)
         if type(state) is dict and type(value) in [str, int, float, bool]:
@@ -121,23 +122,23 @@ class DummyPS(DummyTCPInstrument):
         else:
             raise Exception('Unknown command')
 
-    def processCommand(self, cmdTree, params, isQuery):
-        mappedCmdTree = [self.mapCommands.get(cmd, cmd) for cmd in cmdTree]
-        rootCmd = mappedCmdTree[0]
+    def process_command(self, cmd_tree, params, is_query):
+        mapped_cmd_tree = [self.map_commands.get(cmd, cmd) for cmd in cmd_tree]
+        rootCmd = mapped_cmd_tree[0]
         if rootCmd in ['MEASURE', 'OUTPUT']:
-            stateHead = self.state[self._currInst()]
+            state_head = self.state[self._curr_inst()]
         else:
-            stateHead = self.state
-        stateLeaf = stateHead
+            state_head = self.state
+        state_leaf = state_head
         pcmd = None
-        for cmd in mappedCmdTree:
-            if cmd in stateLeaf:
-                stateHead = stateLeaf
-                stateLeaf = stateHead[cmd]
+        for cmd in mapped_cmd_tree:
+            if cmd in state_leaf:
+                state_head = state_leaf
+                state_leaf = state_head[cmd]
                 pcmd = cmd
             else:
                 break
-        if isQuery:
-            return self.processQuery(stateHead, stateLeaf, pcmd, params)
+        if is_query:
+            return self.process_query(state_head, state_leaf, pcmd, params)
         else:
-            return self.processWrite(stateHead, stateLeaf, pcmd, params)
+            return self.process_write(state_head, state_leaf, pcmd, params)

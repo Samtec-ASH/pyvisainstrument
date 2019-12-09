@@ -1,49 +1,53 @@
 """NumatoRelay is a convenience class to control various Numato Lab Relay Modules."""
 import time
+from typing import List, Optional, Union
 from telnetlib import Telnet
-import serial
-from pyvisainstrument import AgilentDAQ
+from serial import Serial
+from pyvisainstrument import KeysightDAQ
 
 
-class NumatoRelay(AgilentDAQ):
+class NumatoRelay(KeysightDAQ):
     """NumatoRelay is a convenience class to control various Numato Lab Relay Modules."""
     # pylint: disable=too-many-arguments,super-init-not-called
-    def __init__(self, name, busAddress, numSlots, numChannels, verbose=False, delay=20e-3):
+
+    def __init__(self, name, bus_address, num_slots, num_channels, verbose=False, delay=20e-3):
         self.name = name
-        # busAddress is formated like GPIB device DEVICE_TYPE::ADDRESS
+        # bus_address is formated like GPIB device DEVICE_TYPE::ADDRESS
         # such as TCP::127.0.0.0 or USB::/dev/ttyACMO
-        addressParts = busAddress.split('::') if '::' in busAddress else ['USB', busAddress]
-        self.deviceType = addressParts[0].upper().strip()
-        self.busAddress = addressParts[1]
-        self.resource = None
+        address_parts = bus_address.split('::') if '::' in bus_address else ['USB', bus_address]
+        self.device_type = address_parts[0].upper().strip()
+        self.bus_address = address_parts[1]
+        self.resource: Optional[Union[Serial, Telnet]] = None
         self.delay = delay
-        self.numSlots = 1 or numSlots # Only have 1 slot
-        self.numChannels = numChannels
+        self.num_slots = 1 or num_slots  # Only have 1 slot
+        self.num_channels = num_channels
         self.read_termination = None
         self.write_termination = None
 
     # pylint: disable=arguments-differ
-    def open(self, readTerm=None, writeTerm=None, baudRate=19200, user='admin', password='admin'):
+    def open(
+            self, read_term: Optional[str] = None, write_term: Optional[str] = None, baud_rate: Optional[int] = 19200,
+            user: str = 'admin', password: str = 'admin'):
         """Open instrument connection.
         Args:
-            baudRate (int, optional): Baud rate in hertz
-            readTerm (str, optional): Read termination chars
-            writeTerm (str, optional): Write termination chars
+            baud_rate (int, optional): Baud rate in hertz
+            read_term (str, optional): Read termination chars
+            write_term (str, optional): Write termination chars
             user (str, optional): username for TCP comm.
             password (str, optional): password for TCP comm.
         Returns:
             None
         """
         # USB device
-        if 'USB' in self.deviceType:
-            self.read_termination = readTerm or '\n\r'
-            self.write_termination = writeTerm or '\n\r'
-            self.resource = serial.Serial(self.busAddress, baudRate, timeout=1)
+        if 'USB' in self.device_type:
+            self.read_termination = read_term or '\n\r'
+            self.write_termination = write_term or '\n\r'
+            self.resource = Serial(self.bus_address, baud_rate, timeout=1)
         # For Telnet (TCP) based modules
-        elif 'TCP' in self.deviceType:
-            self.read_termination = readTerm or '\r\n'
-            self.write_termination = writeTerm or '\n\r'
-            self.resource = Telnet(self.busAddress, timeout=1)
+        elif 'TCP' in self.device_type:
+            self.read_termination = read_term or '\r\n'
+            self.write_termination = write_term or '\n\r'
+            self.resource = Telnet(self.bus_address, timeout=1)
             self.resource.read_until(b"User Name: ")
             self.write(user)
             if password:
@@ -51,7 +55,7 @@ class NumatoRelay(AgilentDAQ):
                 self.write(password)
             self.resource.read_until(f"{self.read_termination}".encode('ascii'))
         else:
-            raise ValueError(f'Unsupported device type: {self.deviceType}')
+            raise ValueError(f'Unsupported device type: {self.device_type}')
         self._clear_buffer()
 
     def close(self):
@@ -59,16 +63,17 @@ class NumatoRelay(AgilentDAQ):
         if self.resource:
             self.resource.close()
 
-    def getID(self):
+    def get_id(self):
         ver = self.query('ver')
         return f'{self.name} {ver}'
 
-    def getChannelState(self, channel, numAttempts=3):
+    def get_channel_state(self, channel: int, num_attempts: int = 3):
         """Get state of {channel} (int). Return 1 if closed else 0 if open"""
-        if int(channel) >= self.numChannels or int(channel) < 0:
-            raise Exception(f'Channel must be in range [0,{self.numChannels-1}]')
+        if int(channel) >= self.num_channels or int(channel) < 0:
+            raise Exception(f'Channel must be in range [0,{self.num_channels-1}]')
         err = None
-        for _ in range(numAttempts):
+        msg = ''
+        for _ in range(num_attempts):
             try:
                 msg = self.query(f"relay read {channel}")
                 self._clear_buffer()
@@ -79,35 +84,35 @@ class NumatoRelay(AgilentDAQ):
                 err = e
         raise Exception(f'Failed to get channel state {msg}. {err}')
 
-    def isChannelClosed(self, channel):
+    def is_channel_closed(self, channel: int):
         """Check if {channel} (int) is closed. """
-        return self.getChannelState(channel) == 1
+        return self.get_channel_state(channel) == 1
 
-    def isChannelOpen(self, channel):
+    def is_channel_open(self, channel: int):
         """Check if {channel} (int) is open. """
-        return self.getChannelState(channel) == 0
+        return self.get_channel_state(channel) == 0
 
-    def openAllChannels(self, slotIdx=1, delay=0):
-        """Open all channels for {slotIdx} (int) w/ {delay} (Optional[int]). """
-        for ch in range(self.numChannels):
-            self.openChannel(ch)
+    def open_all_channels(self, slot: int = 1, delay: float = 0):
+        """Open all channels for {slot} (int) w/ {delay} (Optional[float]). """
+        for ch in range(self.num_channels):
+            self.open_channel(ch)
 
-    def closeAllChannels(self, slotIdx=1, delay=0):
-        """Close all channels for {slotIdx} (int) w/ {delay} (Optional[int]). """
-        for ch in range(self.numChannels):
-            self.closeChannel(ch, delay)
+    def close_all_channels(self, slot: int = 1, delay: float = 0):
+        """Close all channels for {slot} (int) w/ {delay} (Optional[int]). """
+        for ch in range(self.num_channels):
+            self.close_channel(ch, delay)
 
-    def openChannels(self, channels, delay=0):
+    def open_channels(self, channels: List[int], delay: float = 0):
         """Open specified {channels} (List[int]) w/ {delay} (Optional[int]). """
         for ch in channels:
-            self.openChannel(ch, delay)
+            self.open_channel(ch, delay)
 
-    def closeChannels(self, channels, delay=0):
+    def close_channels(self, channels: List[int], delay: float = 0):
         """Close specified {channels} (List[int]) w/ {delay} (Optional[int]). """
         for ch in channels:
-            self.closeChannel(ch, delay)
+            self.close_channel(ch, delay)
 
-    def setChannel(self, channel, on, delay, numAttempts=3):
+    def set_channel(self, channel: int, on: bool, delay: float, numAttempts: int = 3):
         """Set specified {channel} (int) on or off w/ {delay}
             (Optional[int]) and {numAttempts} (int).
         """
@@ -116,54 +121,55 @@ class NumatoRelay(AgilentDAQ):
             try:
                 self.write(f"relay {'on' if on else 'off'} {channel}")
                 time.sleep(delay)
-                if self.getChannelState(channel) == on:
+                if self.get_channel_state(channel) == on:
                     return
                 self._clear_buffer()
             except Exception as e:
                 err = e
         raise Exception(f"Failed to set channel {channel} {'on' if on else 'off'}. {err}")
 
-    def openChannel(self, channel, delay=0):
+    def open_channel(self, channel: int, delay: float = 0):
         """Open specified channel.
         Args:
             channel (int): Channel index
             delay (int, optional): Delay after operation (default 0).
         """
-        self.setChannel(channel, on=False, delay=delay)
+        self.set_channel(channel, on=False, delay=delay)
 
-    def closeChannel(self, channel, delay=0):
+    def close_channel(self, channel: int, delay: float = 0):
         """Close specified channel.
         Args:
             channel (int): Channel index
             delay (int, optional): Delay after operation (default 0).
         """
-        self.setChannel(channel, on=True, delay=delay)
+        self.set_channel(channel, on=True, delay=delay)
 
     def read(self):
         """Read from resource """
-        if 'TCP' in self.deviceType:
+        if 'TCP' in self.device_type:
             return self.resource.read_until(
                 f'{self.read_termination}>'.encode('ascii'), timeout=1
             ).decode()
         return self.resource.read_until(f'{self.read_termination}>'.encode('ascii')).decode()
 
-    def write(self, cmd, reset_input=True):
+    def write(self, cmd: str, reset_input: bool = True):
         """Write cmd to resource."""
         self.resource.write(f'{cmd}{self.write_termination}'.encode('ascii'))
         if reset_input:
             time.sleep(0.1)
             self._clear_buffer()
 
-    def query(self, cmd):
+    def query(self, cmd: str):
         """Perform write followed by read."""
         self.write(cmd, reset_input=False)
         msg = self.read()
         msg = msg.replace(f'{cmd}\n{self.read_termination}', '')  # Remove sent cmd
-        msg = msg.replace(f'{self.read_termination}>', '') # Remove result term
+        msg = msg.replace(f'{self.read_termination}>', '')  # Remove result term
         return msg
 
     def _clear_buffer(self):
         """Try to empty IO buffers. (useful when in unknown state)."""
-        if 'USB' in self.deviceType:
+        resource = self.resource
+        if 'USB' in self.device_type and isinstance(resource, Serial):
             self.resource.reset_input_buffer()
             self.resource.reset_output_buffer()

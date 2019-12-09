@@ -8,12 +8,13 @@ pylint = "*"
 pytest = "*"
 twine = "*"
 wheel = "*"
+autopep8 = "*"
 
 [packages]
 pyvisa = "==1.8"
 pyvisa-py = "*"
 pyserial = "*"
-pyvisainstrument = {editable = true,path = "."}
+pyvisainstrument = {editable = true, path = "."}
 
 [requires]
 python_version = "3.7"

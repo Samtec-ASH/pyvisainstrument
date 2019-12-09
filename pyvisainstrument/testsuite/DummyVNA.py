@@ -1,16 +1,17 @@
 # pylint: skip-file
+from typing import Optional, Dict
 import numpy as np
 from pyvisainstrument.testsuite.DummyTCPInstrument import DummyTCPInstrument
 
 
 class DummyVNA(DummyTCPInstrument):
 
-    def __init__(self, numPorts=4, *args, **kwargs):
+    def __init__(self, num_ports=4, *args, **kwargs):
         super(DummyVNA, self).__init__(*args, **kwargs)
-        self.numPorts = numPorts
-        self.cmdTree = None
+        self.num_ports = num_ports
+        self.cmd_tree = None
         self.state = {
-            "*CLS": self.clearStatus,
+            "*CLS": self.clear_status,
             "*RST": self.reset,
             "*IDN": "VNA",
             "*OPC": "1",
@@ -70,7 +71,7 @@ class DummyVNA(DummyTCPInstrument):
                         "PARAMETER": {"STATE": "ON", "BBALANCED": {"DEFINE": "SDD11"}}
                     }
                 },
-                "DATA": self._getData
+                "DATA": self._get_data
             },
             "DISPLAY": {
                 "WIND1": {
@@ -106,7 +107,7 @@ class DummyVNA(DummyTCPInstrument):
                 "SOURCE": "IMMediate"
             }
         }
-        self.mapCommands = dict(
+        self.map_commands = dict(
             CALC1='CALCULATE', CALCULATE1='CALCULATE',
             SENS1='SENSE', SENSE1='SENSE',
             CALC='CALCULATE', CALCULATE='CALCULATE',
@@ -172,57 +173,57 @@ class DummyVNA(DummyTCPInstrument):
             SNP='SNP'
         )
 
-    def _getData(self, params, isQuery):
-        if isQuery:
-            numPoints = int(self.state["SENSE"]["SWEEP"]["POINTS"])
+    def _get_data(self, params, is_query):
+        if is_query:
+            num_points = int(self.state["SENSE"]["SWEEP"]["POINTS"])
             # CALC:DATA:SNP:PORTs 1,2,3,4?
-            if self.cmdTree and 'SNP' in self.cmdTree:
-                nPorts = len(params[0].split(',')) if len(params) else self.numPorts
+            if self.cmd_tree and 'SNP' in self.cmd_tree:
+                nports = len(params[0].split(',')) if len(params) else self.num_ports
                 #           freq + S11r,i + S12r,i, ... S22r,i ... SNNr,i
-                numPoints = numPoints + numPoints*(nPorts**2)*2
+                num_points = num_points + num_points * (nports**2) * 2
             else:
-                isComplex = len(params) and (params[0] in ["RDATA", "SDATA"])
-                if isComplex:
-                    numPoints = 2*numPoints
-            data = np.random.rand(numPoints)
-            dataStr = ",".join('{:+.6E}'.format(v) for v in data)
-            return dataStr
+                is_complex = len(params) and (params[0] in ["RDATA", "SDATA"])
+                if is_complex:
+                    num_points = 2 * num_points
+            data = np.random.rand(num_points)
+            data_str = ",".join('{:+.6E}'.format(v) for v in data)
+            return data_str
 
-    def clearStatus(self, params, isQuery):
+    def clear_status(self, params, is_query):
         return
 
-    def reset(self, params, isQuery):
+    def reset(self, params, is_query):
         return
 
-    def processCommand(self, cmdTree, params, isQuery):
-        self.cmdTree = cmdTree
+    def process_command(self, cmd_tree, params, is_query):
+        self.cmd_tree = cmd_tree
         rst = self.state
-        prst = None
+        prst: Optional[Dict] = None
         pcmd = None
-        for cmd in cmdTree:
-            mappedCmd = self.mapCommands.get(cmd, cmd)
-            if mappedCmd in rst:
+        for cmd in cmd_tree:
+            mapped_cmd = self.map_commands.get(cmd, cmd)
+            if mapped_cmd in rst:
                 prst = rst
-                pcmd = mappedCmd
-                rst = rst[mappedCmd]
+                pcmd = mapped_cmd
+                rst = rst[mapped_cmd]
                 if callable(rst):
                     break
             else:
                 break
 
-        if isQuery:
+        if is_query:
             if type(rst) in [str, int, float, bool]:
                 return str(rst)
             elif type(rst) is None:
                 return ''
             elif callable(rst):
-                return rst(params, True)
+                return rst(params, True)  # type: ignore
             else:
                 return '-100'
         else:
             if callable(rst):
-                rst(params, False)
-            elif type(prst) is dict and (type(rst) in [str, int, float, bool, list] or rst is None):
+                rst(params, False)  # type: ignore
+            elif isinstance(prst, dict) and (isinstance(rst, (str, int, float, bool, list)) or rst is None):
                 if len(params):
                     castType = type(params[0]) if rst is None else type(prst[pcmd])
                     prst[pcmd] = castType(params[0])

@@ -1,12 +1,12 @@
 
 """PyVisaInstrument provides boilerplate for various NI-VISA instruments."""
 
-__version__ = "0.13.3"
+__version__ = "1.0.0"
 
 from pyvisainstrument.VisaResource import VisaResource
-from pyvisainstrument.AgilentPowerSupply import AgilentPowerSupply
-from pyvisainstrument.AgilentVNA import AgilentVNA
-from pyvisainstrument.AgilentDAQ import AgilentDAQ
+from pyvisainstrument.KeysightPSU import KeysightPSU
+from pyvisainstrument.KeysightVNA import KeysightVNA
+from pyvisainstrument.KeysightDAQ import KeysightDAQ
 from pyvisainstrument.NumatoRelay import NumatoRelay
 
-__all__ = ['VisaResource', 'AgilentPowerSupply', 'AgilentVNA', 'AgilentDAQ', 'NumatoRelay']
+__all__ = ['VisaResource', 'KeysightPSU', 'KeysightVNA', 'KeysightDAQ', 'NumatoRelay']

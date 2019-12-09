@@ -6,36 +6,38 @@ import visa
 import numpy as np
 logger = logging.getLogger('VISA')
 
+
 class VisaResource:
     """VisaResource is a base class for various VISA-style instruments."""
-    def __init__(self, name, busAddress, verbose=False, delay=35E-3):
+
+    def __init__(self, name, bus_address, verbose=False, delay=35E-3):
         self.name = name
-        self.busAddress = busAddress
+        self.bus_address = bus_address
         self.verbose = verbose
         self.resource = None
-        self.isOpen = False
+        self.is_open = False
         self.delay = delay
         self.ni_backend = os.getenv('NI_VISA_PATH', '@ni')
 
-    def open(self, readTerm=None, writeTerm=None, baudRate=None):
+    def open(self, read_term=None, write_term=None, baud_rate=None):
         """Open instrument connection.
         Args:
-            baudRate (int, optional): Baud rate in hertz
-            readTerm (str, optional): Read termination chars
-            writeTerm (str, optional): Write termination chars
+            baud_rate (int, optional): Baud rate in hertz
+            read_term (str, optional): Read termination chars
+            write_term (str, optional): Write termination chars
         Returns:
             None
         """
-        self.resource = visa.ResourceManager(self.ni_backend).open_resource(self.busAddress)
+        self.resource = visa.ResourceManager(self.ni_backend).open_resource(self.bus_address)
         # self.resource.clear()
         self.resource.query_delay = self.delay
-        if readTerm:
-            self.resource.read_termination = readTerm
-        if writeTerm:
-            self.resource.write_termination = writeTerm
-        if baudRate:
-            self.resource.baud_rate = baudRate
-        self.isOpen = True
+        if read_term:
+            self.resource.read_termination = read_term
+        if write_term:
+            self.resource.write_termination = write_term
+        if baud_rate:
+            self.resource.baud_rate = baud_rate
+        self.is_open = True
 
     def close(self):
         """Clear and close instrument connection.
@@ -50,7 +52,7 @@ class VisaResource:
             # self.resource.clear()
             self.resource.close()
         self.resource = None
-        self.isOpen = False
+        self.is_open = False
 
     def write(self, cmd):
         """Perform raw SCPI write
@@ -59,13 +61,13 @@ class VisaResource:
         Returns:
             None
         """
-        if not self.isOpen:
+        if not self.is_open:
             raise Exception("VisaResource not open")
         time.sleep(self.delay)
         logger.debug('%s:WRITE %s', self.name, cmd)
         self.resource.write(cmd)
 
-    def writeAsync(self, cmd, delay=0.1):
+    def write_async(self, cmd, delay=0.1):
         """Perform SCPI command asynchronously for long running commands.
         Note: This still blocks current thread just not device.
         Args:
@@ -76,35 +78,35 @@ class VisaResource:
         self.write('*CLS')
         self.write(cmd)
         self.write('*OPC')
-        isComplete = False
-        while not isComplete:
+        complete = False
+        while not complete:
             msg = self.query('*ESR?')
-            isComplete = (int(msg) & 0x01)
-            if not isComplete:
+            complete = (int(msg) & 0x01)
+            if not complete:
                 time.sleep(delay)
 
-    def query(self, cmd, container=str, maxAttempts=3, dformat='ASCii,0',
-              bigendian=True, chunksize=None):
+    def query(self, cmd, container=str, max_attempts=3, dformat='ASCii,0',
+              big_endian=True, chunk_size=None):
         """Perform raw SCPI query with retries
         Args:
             cmd (str): SCPI query
             container: str, float, bool, np.array
-            maxAttempts (int): Number of attempts
+            max_attempts (int): Number of attempts
         Returns:
             str: Query result
         """
-        if not self.isOpen:
+        if not self.is_open:
             raise Exception("VisaResource not open")
         err = Exception('Failed to perform query')
-        for attempts in range(maxAttempts):
+        for attempts in range(max_attempts):
             try:
                 # Special case for arrays
                 if container in [np.ndarray, np.array, list]:
                     if dformat.upper().startswith('REAL'):
                         datatype = 'd' if '64' in dformat else 'f'
                         rst = self.resource.query_binary_values(
-                            cmd, is_big_endian=bigendian, datatype=datatype,
-                            container=np.array, chunk_size=chunksize
+                            cmd, is_big_endian=big_endian, datatype=datatype,
+                            container=np.array, chunk_size=chunk_size
                         )
                     else:
                         rst = self.resource.query_ascii_values(cmd, container=container)
@@ -123,7 +125,7 @@ class VisaResource:
             except Exception as curErr:
                 logger.warning(
                     'Query attempt %d of %d failed for <%s>.',
-                    attempts+1, maxAttempts, cmd
+                    attempts + 1, max_attempts, cmd
                 )
                 err = curErr
         raise err
@@ -135,14 +137,14 @@ class VisaResource:
         Returns:
             str: Read result
         """
-        if not self.isOpen:
+        if not self.is_open:
             # pylint: disable=broad-except
             raise Exception("VisaResource not open")
         rst = self.resource.read(delay=self.delay)
         if self.verbose:
             logger.debug('%s:READ %s', self.name, rst)
 
-    def getID(self):
+    def get_id(self):
         """Get identifier.
         Args:
             None
@@ -152,14 +154,14 @@ class VisaResource:
         return self.query('*IDN?')
 
     @staticmethod
-    def GetSerialBusAddress(deviceID, baudRate=None, readTerm=None, writeTerm=None):
+    def GetSerialBusAddress(device_id, baud_rate=None, read_term=None, write_term=None):
         """Convenience static method to auto-detect USB serial device by checking if
-        provided deviceID is in *IDN result.
+        provided device_id is in *IDN result.
         Args:
-            deviceID (str): Device ID to search for
-            baudRate (int, optional): Baud rate in hertz
-            readTerm (str, optional): Read termination chars
-            writeTerm (str, optional): Write termination chars
+            device_id (str): Device ID to search for
+            baud_rate (int, optional): Baud rate in hertz
+            read_term (str, optional): Read termination chars
+            write_term (str, optional): Write termination chars
         Returns:
             str: Read result
         """
@@ -169,17 +171,17 @@ class VisaResource:
             inst = None
             try:
                 inst = visa.ResourceManager(ni_backend).open_resource(addr, open_timeout=2)
-                if baudRate:
-                    inst.baud_rate = baudRate
-                if readTerm:
-                    inst.read_termination = readTerm
-                if writeTerm:
-                    inst.write_termination = writeTerm
+                if baud_rate:
+                    inst.baud_rate = baud_rate
+                if read_term:
+                    inst.read_termination = read_term
+                if write_term:
+                    inst.write_termination = write_term
                 inst.timeout = 2000
-                instID = inst.query('*IDN?', delay=100e-3)
+                inst_id = inst.query('*IDN?', delay=100e-3)
                 inst.clear()
                 inst.close()
-                if deviceID in instID:
+                if device_id in inst_id:
                     return addr
             # pylint: disable=broad-except
             except Exception:
