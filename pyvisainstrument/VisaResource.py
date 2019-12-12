@@ -17,7 +17,11 @@ class VisaResource:
         self.resource = None
         self.is_open = False
         self.delay = delay
-        self.ni_backend = os.getenv('NI_VISA_PATH', '@ni')
+
+    @property
+    def ni_backend(self) -> str:
+        """ Get NI VISA backend. """
+        return os.getenv('NI_VISA_PATH', '@ni')
 
     def open(self, read_term=None, write_term=None, baud_rate=None):
         """Open instrument connection.
@@ -25,8 +29,6 @@ class VisaResource:
             baud_rate (int, optional): Baud rate in hertz
             read_term (str, optional): Read termination chars
             write_term (str, optional): Write termination chars
-        Returns:
-            None
         """
         bus_address = self.bus_address
         # Automatically determine ASRL resource address. ASRL::AUTO::<*IDN_MATCH>::INSTR
@@ -47,8 +49,6 @@ class VisaResource:
     def close(self):
         """Clear and close instrument connection.
         Args:
-            None
-        Returns:
             None
         """
         if self.resource:
@@ -83,10 +83,13 @@ class VisaResource:
         err = Exception(f'Failed to perform write_async for <{cmd}>')
         for attempts in range(max_attempts):
             try:
-                tic = time.time()
+                # NOTE: *CLS could be an issue here since it will not only clear status/events but
+                # also cancel any preceding *OPC commands. Ideally should first ensure no preceding *OPC commands
+                # are present by either awaiting for them or raising exception...
                 self.write('*CLS')
                 self.write(cmd)
                 self.write('*OPC')
+                tic = time.time()
                 complete = False
                 while not complete:
                     esr = int(self.resource.query('*ESR?', delay=self.delay))
@@ -104,9 +107,29 @@ class VisaResource:
                 err = cur_err
         raise err
 
+    def sync_commands_blocking(self):
+        """ Waits for all queued commands to complete in blocking manner.
+            Recommended only for quick commands (< 2 second | i.e. less than configured VISA timeout).
+        """
+        rst = int(self.query('*OPC?'))
+        return rst == 1
+
+    def sync_commands_nonblocking(self, delay: float = 0.1):
+        """ Waits for all queued commands to complete in non-blocking polling manner.
+            Recommended for time-consuming commands (> 2 second).
+        """
+        self.write('*OPC')
+        complete = False
+        while not complete:
+            esr = int(self.query('*ESR?', max_attempts=1))
+            if esr & 0x3C:
+                raise Exception(f'Resource {self.bus_address} reported error code: {esr}')
+            complete = esr & 0x01
+            time.sleep(delay)
+
     def query(self, cmd, container=str, max_attempts=3, dformat='ASCii,0',
               big_endian=True, chunk_size=None):
-        """Perform raw SCPI query with retries
+        """ Perform raw SCPI query with retries
         Args:
             cmd (str): SCPI query
             container: str, float, bool, np.array
@@ -115,7 +138,7 @@ class VisaResource:
             str: Query result
         """
         if not self.is_open:
-            raise Exception("VisaResource not open")
+            raise Exception("Visa resource not open")
         err = Exception('Failed to perform query')
         for attempts in range(max_attempts):
             try:
@@ -150,7 +173,7 @@ class VisaResource:
         raise err
 
     def read(self):
-        """Perform raw SCPI read
+        """ Perform raw SCPI read
         Args:
             None
         Returns:
@@ -174,7 +197,7 @@ class VisaResource:
 
     @staticmethod
     def GetSerialBusAddress(device_id, baud_rate=None, read_term=None, write_term=None):
-        """Convenience static method to auto-detect USB serial device by checking if
+        """ Convenience static method to auto-detect USB serial device by checking if
         provided device_id is in *IDN result.
         Args:
             device_id (str): Device ID to search for

@@ -1,4 +1,4 @@
-"""KeysightVNA is a convience class to control various Keysight VNAs."""
+""" KeysightVNA enables controlling various Keysight VNA/PNAs. """
 from __future__ import print_function
 import time
 from typing import Union, Optional, List
@@ -11,14 +11,14 @@ logger = logging.getLogger('VISA')
 
 
 class KeysightVNA(VisaResource):
-    """KeysightVNA is a convenience class to control various Keysight VNAs."""
+    """ KeysightVNA enables controlling various Keysight VNA/PNAs. """
 
     def __init__(self, num_ports: int, *args, **kwargs):
         super(KeysightVNA, self).__init__(name='VNA', *args, **kwargs)
         self.num_ports = num_ports
 
     def set_start_freq(self, freq_hz: float, channel: int = 1):
-        """Set start frequency for channel.
+        """ Set start frequency for channel.
         Args:
             freq_hz (float): Start freq in hertz
             channel (int): Channel number
@@ -26,7 +26,7 @@ class KeysightVNA(VisaResource):
         self.write(f'SENSE{channel:d}:FREQUENCY:START {freq_hz:.0f}')
 
     def get_start_freq(self, channel: int = 1):
-        """Get start frequency for channel.
+        """ Get start frequency for channel.
         Args:
             channel (int): Channel number
         Returns:
@@ -35,7 +35,7 @@ class KeysightVNA(VisaResource):
         return self.query(f'SENSE{channel:d}:FREQUENCY:START?', container=float)
 
     def set_stop_freq(self, freq_hz: float, channel: int = 1):
-        """Set stop frequency for channel.
+        """ Set stop frequency for channel.
         Args:
             freq_hz (float): Stop freq in hertz
             channel (int): Channel number
@@ -43,7 +43,7 @@ class KeysightVNA(VisaResource):
         self.write(f'SENSE{channel:d}:FREQUENCY:STOP {freq_hz:.0f}')
 
     def get_stop_freq(self, channel: int = 1):
-        """Get stop frequency for channel.
+        """ Get stop frequency for channel.
         Args:
             channel (int): Channel number
         Returns:
@@ -52,7 +52,7 @@ class KeysightVNA(VisaResource):
         return self.query(f'SENSE{channel:d}:FREQUENCY:STOP?', container=float)
 
     def set_center_freq(self, freq_hz: float, channel: int = 1):
-        """Set center frequency for channel.
+        """ Set center frequency for channel.
         Args:
             freq_hz (float): Center freq in hertz
             channel (int): Channel number
@@ -60,7 +60,7 @@ class KeysightVNA(VisaResource):
         self.write(f'SENSE{channel:d}:FREQUENCY:CENT {freq_hz:.0f}')
 
     def get_center_freq(self, channel: int = 1):
-        """Get center frequency for channel.
+        """ Get center frequency for channel.
         Args:
             channel (int): Channel number
         Returns:
@@ -69,7 +69,7 @@ class KeysightVNA(VisaResource):
         return self.query(f'SENSE{channel:d}:FREQUENCY:CENT?', container=float)
 
     def set_cw_freq(self, freq_hz: float, channel: int = 1):
-        """Set CW frequency for channel.
+        """ Set CW frequency for channel.
         Args:
             freq_hz (float): CW freq in hertz
             channel (int): Channel number
@@ -77,7 +77,7 @@ class KeysightVNA(VisaResource):
         self.write(f'SENSE{channel:d}:FREQUENCY:CW {freq_hz:.0f}')
 
     def get_cw_freq(self, channel: int = 1):
-        """Get CW frequency for channel.
+        """ Get CW frequency for channel.
         Args:
             channel (int): Channel number
         Returns:
@@ -86,7 +86,7 @@ class KeysightVNA(VisaResource):
         return self.query(f'SENSE{channel:d}:FREQUENCY:CW?', container=float)
 
     def set_number_sweep_points(self, num_points: Union[int, float], channel: int = 1):
-        """Set number sweep points for channel.
+        """ Set number sweep points for channel.
         Args:
             numPoints (int): Number sweep points
             channel (int): Channel number
@@ -94,7 +94,7 @@ class KeysightVNA(VisaResource):
         self.write(f'SENSE{channel:d}:SWEEP:POINTS {num_points:d}')
 
     def get_number_sweep_points(self, channel: int = 1):
-        """Get number sweep points for channel.
+        """ Get number sweep points for channel.
         Args:
             channel (int): Channel number
         Returns:
@@ -103,7 +103,7 @@ class KeysightVNA(VisaResource):
         return self.query(f'SENSE{channel:d}:SWEEP:POINTS?', container=int)
 
     def set_frequency_step_size(self, freq_hz: float, channel: int = 1):
-        """Set freq step size for channel.
+        """ Set freq step size for channel.
         Args:
             freq_hz (float): Frequency step size in hertz
             channel (int): Channel number
@@ -111,7 +111,7 @@ class KeysightVNA(VisaResource):
         self.write(f'SENSE{channel:d}:SWEEP:STEP {freq_hz:0.}')
 
     def get_frequency_step_size(self, channel: int = 1):
-        """Get frequency step size
+        """ Get frequency step size
         Args:
             channel (int): Channel number
         Returns:
@@ -120,7 +120,7 @@ class KeysightVNA(VisaResource):
         return self.query(f'SENSE{channel:d}:SWEEP:STEP?', container=float)
 
     def set_sweep_type(self, sweep_type: str, channel: int = 1):
-        """Set sweep type.
+        """ Set sweep type.
         Args:
             sweepType (string): 'LINear | LOGarithmic | POWer | CW
                                  | SEGMent | PHASe'
@@ -129,7 +129,7 @@ class KeysightVNA(VisaResource):
         self.write(f'SENSE{channel:d}:SWEEP:TYPE {sweep_type:s}')
 
     def get_sweep_type(self, channel: int = 1):
-        """Get sweep type.
+        """ Get sweep type.
         Args:
             channel (int): Channel number
         Returns:
@@ -138,7 +138,7 @@ class KeysightVNA(VisaResource):
         return self.query(f'SENSE{channel:d}:SWEEP:TYPE?')
 
     def set_bandwidth(self, bwid: Union[int, str], channel: int = 1):
-        """Set IF bandwidth.
+        """ Set IF bandwidth.
         Args:
             bwid (int|string): Bandwidth in hertz ('MIN', 'MAX')
             channel (int): Channel number
@@ -146,7 +146,7 @@ class KeysightVNA(VisaResource):
         self.write(f'SENSE{channel:d}:BWID {bwid}')
 
     def get_bandwidth(self, channel: int = 1):
-        """Get IF bandwidth.
+        """ Get IF bandwidth.
         Args:
             channel (int): Channel number
         Returns:
@@ -156,30 +156,31 @@ class KeysightVNA(VisaResource):
 
     def set_sweep_mode(self, mode: str, channel: int = 1):
         """ Set sweep mode.
-            NOTE: For SINGLE, write_async() will wait for sweep to complete.
-                Only calling write() would NOT wait for sweep to complete.
+            NOTE: For SINGle, this will wait for sweep to complete.
         Args:
             mode (str): One of HOLD | CONTinuous | GROups | SINGle
             channel (int): Channel number
         """
+        # Must use write_async as it'll wait for sweep to complete.
         self.write_async(f'SENSE{channel:d}:SWEEP:MODE {mode:s}')
 
-    def get_sweep_mode(self, channel: int = 1):
-        """Get sweep mode.
+    def get_sweep_mode(self, channel: int = 1) -> str:
+        """ Get sweep mode.
         Args:
             channel (int): Channel number
         Returns:
             str: Sweep mode
         """
-        return self.query(f'SENSE{channel:d}:SWEEP:MODE?')
+        return str(self.query(f'SENSE{channel:d}:SWEEP:MODE?'))
 
-    def get_cal_sets(self, channel: int = 1):
-        """ Get saved cal sets from registry. """
-        return self.query(f'SENSE{channel}:CORR:CSET:CAT?')
+    def get_cal_sets(self, channel: int = 1) -> List[str]:
+        """ Get saved cal set IDs from registry. """
+        cal_sets: str = str(self.query(f'SENSE{channel}:CORR:CSET:CAT?'))
+        return cal_sets.split(',')
 
     def set_active_cal_set(
             self, cal_set: str, interpolate: bool = True, apply_cal_stimulus: bool = True, channel: int = 1):
-        """Select and applies cal set to specified channel
+        """ Select and applies cal set to specified channel
         Can get list of cal sets with SENS:CORR:CSET:CAT?
         Args:
             cal_set (str): Cal Set to make active
@@ -207,6 +208,7 @@ class KeysightVNA(VisaResource):
         self.set_stop_freq(stop_freq, channel=channel)
         self.set_number_sweep_points(num_points, channel=channel)
         self.set_sweep_type(sweep_type, channel=channel)
+        self.sync_commands_nonblocking()
 
     def delete_all_traces(self, cnum: int = 1):
         """ Delete all measurement traces. """
@@ -214,8 +216,9 @@ class KeysightVNA(VisaResource):
 
     def create_trace(self, tname: str, sname: str, cnum: int = 1):
         """ Create measurement trace and select it. """
-        self.write_async(f'CALC{cnum}:PAR:DEF \'{tname}\',{sname}')
-        self.write_async(f'CALC{cnum}:PAR:SEL \'{tname}\'')
+        self.write(f'CALC{cnum}:PAR:DEF \'{tname}\',{sname}')
+        self.write(f'CALC{cnum}:PAR:SEL \'{tname}\'')
+        self.sync_commands_nonblocking()
 
     def create_window_trace(self, window: int, trace: int, tname: str):
         """ Create window trace and assign measurement trace feed. """
@@ -227,11 +230,28 @@ class KeysightVNA(VisaResource):
         self.write_async(f'DISP:WIND{window}:STATE {on_str}')
 
     def set_trigger_source(self, trigger_source: str = "IMM"):
-        """no help available"""
+        """ Set trigger source
+        Args:
+            trigger_source (str): Trigger source ['IMMEDIATE', 'CONTINUOUS']
+        """
         self.write(f'TRIG:SOUR {trigger_source}')
 
+    def set_trace_format(self, fmt: str = 'RI'):
+        """ Setup SNP trace format
+        Args:
+            fmt (str): MA, DB, RI, AUTO"""
+        self.write(f'MMEM:STOR:TRAC:FORM:SNP {fmt}')
+
+    def set_data_format(self, dformat: str = 'real'):
+        """ Set data format to be 'real,32' (binary), 'real,64' (binary), or 'ascii,0' """
+        is_binary_fmt = dformat.startswith('real')
+        is_64_bit = '64' in dformat
+        fmt = 'REAL' if is_binary_fmt else 'ASCii'
+        bits = '64' if is_64_bit else '32' if is_binary_fmt else '0'
+        self.write(f'FORM:DATA {fmt},{bits}')
+
     def setup_ses_traces(self, port_pairs: Optional[List[List[int]]] = None):
-        """Convenience method to setup single - ended sweep traces.
+        """ Convenience method to setup single - ended sweep traces.
         Should be called after setting sweep params and mode.
         Args:
             port_pairs Optional[List[List[int]]]: Port pairs
@@ -242,7 +262,7 @@ class KeysightVNA(VisaResource):
         self.delete_all_traces()
 
         if port_pairs and len(port_pairs) != 2:
-            raise ValueError('portPairs must have length 2')
+            raise ValueError('port_pairs must have length 2')
         # Default to all NxN pairs
         if port_pairs is None:
             port_pairs = 2 * [list(range(self.num_ports))]
@@ -263,10 +283,11 @@ class KeysightVNA(VisaResource):
         self.set_trigger_source('IMMediate')
         return trace_names
 
-    def capture_ses_trace(self, dtype=float, trace_names=None, port_pairs=None,
-                          data_format='real', big_endian=True):
-        """Convenience method to capture single - ended sweep traces.
-        Should be called after setupSESTraces().
+    def capture_ses_traces(
+            self, dtype=float, trace_names: Optional[List[str]] = None, port_pairs: Optional[List[List[int]]] = None,
+            data_format: str = 'real', big_endian: bool = True):
+        """ Convenience method to capture single-ended measurement traces.
+        Should be called after setup_ses_traces().
         Args:
             dtype: Data format either float or complex
             trace_names: Name of traces to capture
@@ -329,20 +350,15 @@ class KeysightVNA(VisaResource):
         self.write('*CLS')  # Clean up
         return sdata
 
-    def set_trace_format(self, fmt='RI'):
-        """fmt: MA, DB, RI, AUTO"""
-        self.write(f'MMEM:STOR:TRAC:FORM:SNP {fmt}')
+    def setup_snp_traces(self, ports: Optional[List[int]] = None):
+        """ Setup SnP traces for given ports"""
+        if ports is None:
+            ports = list(range(self.num_ports))
+        port_pairs = [ports, ports]
+        return self.setup_ses_traces(port_pairs)
 
-    def set_data_format(self, dformat='real'):
-        """ Set data format to be 'real,32' (binary), 'real,64' (binary), or 'ascii,0' """
-        is_binary_fmt = dformat.startswith('real')
-        is_64_bit = '64' in dformat
-        fmt = 'REAL' if is_binary_fmt else 'ASCii'
-        bits = '64' if is_64_bit else '32' if is_binary_fmt else '0'
-        self.write(f'FORM:DATA {fmt},{bits}')  # Read data as binary or ascii (binary preferred)
-
-    def capture_snp_data(self, ports=None, dformat='real', big_endian=True):
-        """Convenience method to capture port data as RI.
+    def capture_snp_data(self, ports: Optional[List[int]] = None, dformat: str = 'real', big_endian: bool = True):
+        """ Capture SnP data for given ports in RI format.
         Args:
             ports: list of desired ports(base - 0 index)
             dformat: Data format for transfer: 'ascii', 'real', 'real,32', 'real,64'
@@ -378,9 +394,9 @@ class KeysightVNA(VisaResource):
         self.write('*CLS')  # Clean up
         return freq, sdata
 
-    def setup_s4p_traces(self):
-        """Convenience method to setup differential sweep traces for all
-        diff s - params. Should be called after setting sweep params and mode.
+    def setup_diff_traces(self):
+        """ Convenience method to setup differential sweep traces for all
+        diff s-params. Should be called after setting sweep params and mode.
         Args:
             None
         Returns:
@@ -411,9 +427,9 @@ class KeysightVNA(VisaResource):
         self.write(f'CALC1:FSIM:BAL:TOP:BBAL:PPORTS {port_list}')
         self.set_trigger_source('IMMediate')
 
-    def capture_s4p_trace(self, dtype=float):
-        """Convenience method to capture differential sweep traces for
-        all diff s - params SDD11, SDD12, SDD21, & SDD22.
+    def capture_diff_traces(self, dtype=float):
+        """ Convenience method to capture differential sweep traces for
+        all diff s-params SDD11, SDD12, SDD21, ....
         Should be called after setupS4PTraces().
         Args:
             dtype: Data format either float or complex
@@ -425,8 +441,8 @@ class KeysightVNA(VisaResource):
         num_diff_pairs = self.num_ports // 2
         # Trigger trace and wait.
         self.set_sweep_mode('SINGLE')
-        numPoints = self.get_number_sweep_points()
-        s4p_data = np.zeros((numPoints, 2, 2), dtype=dtype)
+        num_points = self.get_number_sweep_points()
+        diff_data = np.zeros((num_points, num_diff_pairs, num_diff_pairs), dtype=dtype)
 
         dtype_name = 'SDATA' if dtype == complex else 'FDATA'
         data_query = f'CALC1:DATA? {dtype_name}'
@@ -437,36 +453,39 @@ class KeysightVNA(VisaResource):
                 # Complex is returned as alternating real,imag,...
                 if dtype == complex:
                     data = data[0::2] + 1j * data[1::2]  # type: ignore
-                s4p_data[:, i, j] = data
-        return s4p_data
+                diff_data[:, i, j] = data
+        return diff_data
 
-    def setup_ecalibration(self, port_connectors, port_kits, port_thru_pairs=None, auto_orient=True):
-        """Convience method to perform guided calibration w / e - cal module
+    def setup_ecalibration(
+            self, port_connectors: List[str],
+            port_kits: List[str],
+            port_thru_pairs: List[int] = None, auto_orient: bool = True):
+        """ Convience method to perform guided calibration w / e - cal module
         Args:
-            portConnectors([str]):
+            port_connectors([str]):
                 Defines connection for each port.
                 Index corresponds to(port number - 1).
                 E.g. ['2.92 mm female', '2.92 mm female']
-            portKits([str]):
+            port_kits([str]):
                 Defines e - cal kit used for each port.
                 Index corresponds to(port number - 1).
                 E.g. ['N4692-60003 ECal 13226', 'N4692-60003 ECal 13226']
-            portThruPairs([int], optional):
+            port_thru_pairs([int], optional):
                 Defines port pairs to perform cal on.
                 Defaults to min required by VNA.
                 E.g[1, 2, 1, 3, 1, 4, 2, 3, 2, 4, 3, 4]
-            autoOrient(bool, optional)
+            auto_orient(bool, optional)
                 To auto determine port connection orientation
                 Default is True
         """
         if not isinstance(port_connectors, list) or not isinstance(port_kits, list):
-            raise Exception('portConnectors and portKits must be of type list')
+            raise Exception('port_connectors and portKits must be of type list')
 
         if len(port_connectors) != len(port_kits):
-            raise Exception('portConnectors and portKits must have same length')
+            raise Exception('port_connectors and portKits must have same length')
 
-        if port_thru_pairs and not isinstance(port_thru_pairs, list) or len(port_thru_pairs) % 2:
-            raise Exception('portThruPairs must be a list of even length')
+        if not isinstance(port_thru_pairs, list) or (port_thru_pairs and len(port_thru_pairs) % 2):
+            raise Exception('port_thru_pairs must be a list of even length')
 
         # Set port connector (i.e. 2.92 mm female)
         cmd = 'SENSE1:CORR:COLL:GUID:CONN:PORT'
@@ -489,32 +508,32 @@ class KeysightVNA(VisaResource):
             self.write('SENSE1:CORR:COLL:GUID:INIT')
 
     def get_number_ecal_steps(self):
-        """Get total number e - cal steps to be performed.
+        """ Get total number e - cal steps to be performed.
         Must be called after setupECalibration().
         Args:
             None
         Returns:
-            int: Number of e - cal steps
+            int: Number of e-cal steps
         """
         return self.query('SENSE1:CORR:COLL:GUID:STEPS?', container=int)
 
     def get_ecal_step_info(self, step: int):
-        """Get e - cal step description.
+        """ Get e-cal step description.
         Must be called after setupECalibration().
         Args:
-            step(int): Index of e - cal step
+            step(int): Index of e-cal step
         Returns:
-            str: Description of e - cal step.
+            str: Description of e-cal step.
         """
         return self.query(f'SENSE1:CORR:COLL:GUID:DESC? {step+1}')
 
-    def perform_ecal_step(self, step: int, save: bool = True, save_name=None, delay=2):
-        """Perform e - cal step. Should be done in order.
+    def perform_ecal_step(self, step: int, save: bool = True, save_name: Optional[str] = None, delay: float = 2):
+        """ Perform e-cal step. Should be done in order.
         Must be called after setupECalibration().
         Best used for asynchronous execution.
         For synchronous, use performECalSteps() iterator.
         Args:
-            step(int): Index of e - cal step to perform.
+            step(int): Index of e-cal step to perform.
             save(bool, optional): To save results if last step
         Returns:
             None
@@ -527,13 +546,13 @@ class KeysightVNA(VisaResource):
             save_suffix = f'SAVE:CSET "{save_name}"' if save_name else 'SAVE'
             self.write(f'SENSE1:CORR:COLL:GUID:{save_suffix}')
 
-    def perform_ecal_steps(self, save=True, save_name=None, delay=5):
-        """Perform all e - cal steps as iterator.
-        Must be called after setupECalibration().
+    def perform_ecal_steps(self, save: bool = True, save_name: Optional[str] = None, delay: float = 5):
+        """ Perform all e-cal steps as iterator.
+        Must be called after setup_ecalibration().
         Best used for synchronous execution.
-        >> > vna.setupECalibration(...)
-        >> > for stepDescription in vna.performECalSteps():
-        >> > print(stepDescription)
+        >> > vna.setup_ecalibration(...)
+        >> > for step_description in vna.perform_ecal_steps():
+        >> > print(step_description)
         Args:
             None
         Yields:
@@ -556,7 +575,7 @@ if __name__ == '__main__':
     vna.open(write_term='\n', read_term='\n')
     print(vna.get_id())
     vna.setup_sweep(20.E6, 30.E6, 10, 'LINEAR')
-    vna.setup_s4p_traces()
-    print(vna.capture_s4p_trace())
+    vna.setup_diff_traces()
+    print(vna.capture_diff_traces())
     vna.close()
     print('Finished')

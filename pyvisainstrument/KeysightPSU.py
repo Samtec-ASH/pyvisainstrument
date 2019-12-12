@@ -1,24 +1,24 @@
-"""KeysightPSU is a convenience class to control various Keysight power supplies."""
+""" KeysightPSU enables controlling various Keysight power supply units."""
 from __future__ import print_function
 from typing import Union
 from pyvisainstrument.VisaResource import VisaResource
 
 
 class KeysightPSU(VisaResource):
-    """KeysightPSU is a convenience class to control various Keysight power supplies."""
+    """ KeysightPSU enables controlling various Keysight power supply units."""
 
     def __init__(self, *args, **kwargs):
         super(KeysightPSU, self).__init__(name='PS', *args, **kwargs)
 
     def set_channel(self, ch: Union[str, int]):
-        """Select channel for mult-channel PS.
+        """ Select channel for multi-channel PS.
         Args:
             ch (str, int): Channel name or index
         """
         self.write(f'INST:SEL {ch}')
 
     def get_channel(self):
-        """Get selected channel for mult-channel PS.
+        """ Get selected channel for multi-channel PS.
         Args:
             None
         Returns:
@@ -27,15 +27,15 @@ class KeysightPSU(VisaResource):
         return str(self.query('INST:SEL?'))
 
     def enable(self):
-        """Enable output state. """
+        """ Enable output state of selected channel. """
         self.set_output_state(True)
 
     def disable(self):
-        """Disable output state. """
+        """ Disable output state of selected channel. """
         self.set_output_state(False)
 
-    def apply(self, ch: Union[str, int], volt: float, curr: float, precision=2):
-        """Quickly apply power supply settings.
+    def apply(self, ch: Union[str, int], volt: float, curr: float, precision: int = 2):
+        """ Quickly apply power supply settings.
         Args:
             ch (str): Channel name
             volt (float): Voltage in volts
@@ -45,16 +45,14 @@ class KeysightPSU(VisaResource):
         self.write(f'APPL {ch}, {volt:0.{precision}f}, {curr:0.{precision}f}')
 
     def set_output_state(self, state: bool):
-        """Enable or disable output.
+        """ Enable or disable output.
         Args:
             state (bool): Output state
-        Returns:
-            None
         """
         self.write(f"OUTP:STAT {'ON' if state else 'OFF'}")
 
     def get_output_state(self):
-        """Get output state.
+        """ Get output state.
         Args:
             None
         Returns:
@@ -63,17 +61,15 @@ class KeysightPSU(VisaResource):
         return self.query('OUTP:STAT?') == '1'
 
     def set_voltage_set_point(self, voltage: float, precision: int = 2):
-        """Set voltage setpoint
+        """ Set voltage set point
         Args:
             volt (float): Voltage in volts
             precision (int): Precision of voltage
-        Returns:
-            None
         """
         self.write(f'VOLT {voltage:0.{precision}f}')
 
     def get_voltage_set_point(self):
-        """Get voltage setpoint
+        """ Get voltage set point
         Args:
             None
         Returns:
@@ -82,17 +78,15 @@ class KeysightPSU(VisaResource):
         return float(self.query('VOLT?'))
 
     def set_current_limit(self, current: float, precision: int = 2):
-        """Set current limit
+        """ Set current limit
         Args:
             current (float): Current in amperes
             precision (int): Precision of current
-        Returns:
-            None
         """
         self.write(f'CURR {current:0.{precision}f}')
 
     def get_current_limit(self):
-        """Get current limit
+        """ Get current limit
         Args:
             None
         Returns:
@@ -101,7 +95,7 @@ class KeysightPSU(VisaResource):
         return float(self.query('CURR?'))
 
     def get_measured_voltage(self):
-        """Get measured voltage
+        """ Get measured voltage
         Args:
             None
         Returns:
@@ -110,7 +104,7 @@ class KeysightPSU(VisaResource):
         return float(self.query('MEAS:VOLT:DC?'))
 
     def get_measured_current(self):
-        """Get measured current usage
+        """ Get measured current usage
         Args:
             None
         Returns:
@@ -119,7 +113,7 @@ class KeysightPSU(VisaResource):
         return float(self.query('MEAS:CURR:DC?'))
 
     def get_max_voltage(self):
-        """Get max voltage of PS channel
+        """ Get max voltage of PS channel
         Args:
             None
         Returns:
@@ -128,7 +122,7 @@ class KeysightPSU(VisaResource):
         return float(self.query('VOLT? MAX'))
 
     def get_min_voltage(self):
-        """Get min voltage of PS channel
+        """ Get min voltage of PS channel
         Args:
             None
         Returns:
@@ -137,7 +131,7 @@ class KeysightPSU(VisaResource):
         return float(self.query('VOLT? MIN'))
 
     def get_max_current_limit(self):
-        """Get max current limit of PS channel
+        """ Get max current limit of PS channel
         Args:
             None
         Returns:
@@ -146,7 +140,7 @@ class KeysightPSU(VisaResource):
         return float(self.query('CURR? MAX'))
 
     def get_min_current_limit(self):
-        """Get min current limit of PS channel
+        """ Get min current limit of PS channel
         Args:
             None
         Returns:
@@ -155,29 +149,25 @@ class KeysightPSU(VisaResource):
         return float(self.query('CURR? MIN'))
 
     def set_display_text(self, txt: str):
-        """Set display text
+        """ Set display text
         Args:
             txt (str): Text to display
-        Returns:
-            None
         """
         self.write(f'DISP:TEXT:DATA \"{txt}\"')
 
     def clear_display_text(self):
-        """Clear display text
+        """ Clear display text
         Args:
-            None
-        Returns:
             None
         """
         self.write('DISP:TEXT:CLEA')
 
     def get_display_text(self):
-        """Get display text
+        """ Get display text
         Args:
             None
         Returns:
-            str: Text to display
+            str: Text on display
         """
         return str(self.query('DISP:TEXT:DATA?'))
 
