@@ -171,19 +171,22 @@ class KeysightVNA(VisaResource):
         """
         return self.query(f'SENSE{channel:d}:SWEEP:MODE?')
 
+    def get_cal_sets(self, channel: int = 1):
+        return self.query(f'SENSE{channel}:CORR:CSET:CAT?')
+
     def set_active_cal_set(
             self, cal_set: str, interpolate: bool = True, apply_cal_stimulus: bool = True, channel: int = 1):
         """Select and applies cal set to specified channel
         Can get list of cal sets with SENS:CORR:CSET:CAT?
         Args:
-            calSet (str): Cal Set to make active
+            cal_set (str): Cal Set to make active
             interpolate (bool): Interpolate data points
             channel (int): Channel number
         """
         interpolate_cmd = 'ON' if interpolate else 'OFF'
         stimulus_cmd = '1' if apply_cal_stimulus else '0'
         self.write(f'SENSE{channel}:CORR:INT {interpolate_cmd}')
-        self.write(f'SENSE{channel}:CORR:CSET:ACT \'{cal_set}\',{stimulus_cmd}')
+        self.write_async(f'SENSE{channel}:CORR:CSET:ACT \'{cal_set}\',{stimulus_cmd}')
 
     # pylint: disable=too-many-arguments
     def setup_sweep(
@@ -191,10 +194,10 @@ class KeysightVNA(VisaResource):
             sweep_type: str = "LINEAR", channel: int = 1):
         """Convience method to configure common sweep parameters
         Args:
-            startFreq (float): Start frequency in Hz
-            stopFreq (float): Stop frequency in Hz
-            numPoints (int): Number frequency points
-            sweepType (str): Sweep type [see setSweepType()]
+            start_freq (float): Start frequency in Hz
+            stop_freq (float): Stop frequency in Hz
+            num_points (int): Number frequency points
+            sweep_type (str): Sweep type [see setSweepType()]
             channel (int): Channel number
         """
         self.set_start_freq(start_freq, channel=channel)
@@ -204,21 +207,21 @@ class KeysightVNA(VisaResource):
 
     def delete_all_traces(self, cnum: int = 1):
         """ Delete all measurement traces. """
-        self.write(f'CALC{cnum}:PAR:DEL:ALL')
+        self.write_async(f'CALC{cnum}:PAR:DEL:ALL')
 
     def create_trace(self, tname: str, sname: str, cnum: int = 1):
         """ Create measurement trace and select it. """
-        self.write(f'CALC{cnum}:PAR:DEF \'{tname}\',{sname}')
-        self.write(f'CALC{cnum}:PAR:SEL \'{tname}\'')
+        self.write_async(f'CALC{cnum}:PAR:DEF \'{tname}\',{sname}')
+        self.write_async(f'CALC{cnum}:PAR:SEL \'{tname}\'')
 
     def create_window_trace(self, window: int, trace: int, tname: str):
         """ Create window trace and assign measurement trace feed. """
-        self.write(f'DISP:WIND{window}:TRAC{trace}:FEED \'{tname}\'')
+        self.write_async(f'DISP:WIND{window}:TRAC{trace}:FEED \'{tname}\'')
 
     def set_display_window(self, window: int, on: bool):
         """ Set window on/off. """
         on_str = 'ON' if on else 'OFF'
-        self.write(f'DISP:WIND{window}:STATE {on_str}')
+        self.write_async(f'DISP:WIND{window}:STATE {on_str}')
 
     def set_trigger_source(self, trigger_source: str = "IMM"):
         """no help available"""
@@ -272,7 +275,7 @@ class KeysightVNA(VisaResource):
             F - Number of sweep points
         """
         # Trigger trace and wait.
-        self.write_async('SENSE1:SWEEP:MODE SINGLE', delay=0.1)
+        self.set_sweep_mode('SINGLE')
 
         # Set data format
         self.set_data_format(data_format)
@@ -349,7 +352,7 @@ class KeysightVNA(VisaResource):
         nports = len(ports)
 
         # Trigger trace and wait.
-        self.write_async('SENSE1:SWEEP:MODE SINGLE', delay=0.150)
+        self.set_sweep_mode('SINGLE')
 
         # Read back real,imag format
         self.set_trace_format('RI')
@@ -418,7 +421,7 @@ class KeysightVNA(VisaResource):
         """
         num_diff_pairs = self.num_ports // 2
         # Trigger trace and wait.
-        self.write_async('SENSE1:SWEEP:MODE SINGLE', delay=0.1)
+        self.set_sweep_mode('SINGLE')
         numPoints = self.get_number_sweep_points()
         s4p_data = np.zeros((numPoints, 2, 2), dtype=dtype)
 

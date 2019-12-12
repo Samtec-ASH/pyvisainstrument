@@ -28,7 +28,12 @@ class VisaResource:
         Returns:
             None
         """
-        self.resource = visa.ResourceManager(self.ni_backend).open_resource(self.bus_address)
+        bus_address = self.bus_address
+        if self.bus_address.startswith('ASRL::AUTO'):
+            device_id = self.bus_address.split('ASRL::AUTO')[1]
+            device_id = device_id.replace('::INSTR', '')
+            bus_address = VisaResource.GetSerialBusAddress(device_id, baud_rate, read_term, write_term)
+        self.resource = visa.ResourceManager(self.ni_backend).open_resource(bus_address)
         # self.resource.clear()
         self.resource.query_delay = self.delay
         if read_term:
@@ -165,28 +170,43 @@ class VisaResource:
         Returns:
             str: Read result
         """
-        ni_backend = os.getenv('NI_VISA_PATH', '@ni')
-        asrlInstrs = visa.ResourceManager(ni_backend).list_resources('ASRL?*::INSTR')
-        for addr in asrlInstrs:
-            inst = None
+        rmi = visa.ResourceManager(os.getenv('NI_VISA_PATH', '@ni'))
+        used_resource_names = []  # [r.resource_name for r in rmi.list_opened_resources()]
+        avail_resource_names = rmi.list_resources('ASRL?*::INSTR')
+        filt_resource_names = list(filter(
+            lambda x: x not in used_resource_names, avail_resource_names
+        ))
+        target_resource_name = None
+        for resource_name in filt_resource_names:
+            resource = None
             try:
-                inst = visa.ResourceManager(ni_backend).open_resource(addr, open_timeout=2)
+                resource = rmi.open_resource(resource_name, open_timeout=0.3)
                 if baud_rate:
-                    inst.baud_rate = baud_rate
+                    resource.baud_rate = baud_rate
                 if read_term:
-                    inst.read_termination = read_term
+                    resource.read_termination = read_term
                 if write_term:
-                    inst.write_termination = write_term
-                inst.timeout = 2000
-                inst_id = inst.query('*IDN?', delay=100e-3)
-                inst.clear()
-                inst.close()
-                if device_id in inst_id:
-                    return addr
+                    resource.write_termination = write_term
+                resource.timeout = 500
+                resource_id = resource.query('*IDN?', delay=0.3)
+                resource.clear()
+                resource.close()
+                if device_id in resource_id:
+                    target_resource_name = resource_name
+                    break
             # pylint: disable=broad-except
             except Exception:
-                if inst:
-                    inst.clear()
-                    inst.close()
+                try:
+                    if resource:
+                        resource.clear()
+                        resource.close()
+                except Exception:
+                    pass
                 continue
-        return None
+        if target_resource_name:
+            return target_resource_name
+        raise Exception((
+            f'Unable to find serial device w/ ID: {device_id}. '
+            f'Please verify device is powered, connected, and not already in use. '
+            f'Available devices: {filt_resource_names}. '
+        ))

@@ -1,5 +1,7 @@
 ## PyVisaInstrument
 
+![PyPI](https://img.shields.io/pypi/v/pyvisainstrument)
+
 Provides boilerplate for various NI-VISA instruments and utilizes pyvisa.
 
 - KeysightVNA
