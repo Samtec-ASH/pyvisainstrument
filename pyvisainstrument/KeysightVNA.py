@@ -155,12 +155,14 @@ class KeysightVNA(VisaResource):
         return int(self.query(f'SENSE{channel:d}:BWID?', container=float))
 
     def set_sweep_mode(self, mode: str, channel: int = 1):
-        """Set sweep mode.
+        """ Set sweep mode.
+            NOTE: For SINGLE, write_async() will wait for sweep to complete.
+                Only calling write() would NOT wait for sweep to complete.
         Args:
             mode (str): One of HOLD | CONTinuous | GROups | SINGle
             channel (int): Channel number
         """
-        self.write(f'SENSE{channel:d}:SWEEP:MODE {mode:s}')
+        self.write_async(f'SENSE{channel:d}:SWEEP:MODE {mode:s}')
 
     def get_sweep_mode(self, channel: int = 1):
         """Get sweep mode.
