@@ -172,6 +172,7 @@ class KeysightVNA(VisaResource):
         return self.query(f'SENSE{channel:d}:SWEEP:MODE?')
 
     def get_cal_sets(self, channel: int = 1):
+        """ Get saved cal sets from registry. """
         return self.query(f'SENSE{channel}:CORR:CSET:CAT?')
 
     def set_active_cal_set(
