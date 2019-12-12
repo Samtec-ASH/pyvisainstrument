@@ -72,23 +72,37 @@ class VisaResource:
         logger.debug('%s:WRITE %s', self.name, cmd)
         self.resource.write(cmd)
 
-    def write_async(self, cmd, delay=0.1):
+    def write_async(self, cmd, delay=0.1, max_attempts=1, timeout=300):
         """Perform SCPI command asynchronously for long running commands.
-        Note: This still blocks current thread just not device.
+        NOTE: This still blocks current thread just not device.
         Args:
             cmd (str): SCPI command
         Returns:
             rst: Numpy array
         """
-        self.write('*CLS')
-        self.write(cmd)
-        self.write('*OPC')
-        complete = False
-        while not complete:
-            msg = self.query('*ESR?')
-            complete = (int(msg) & 0x01)
-            if not complete:
-                time.sleep(delay)
+        err = Exception(f'Failed to perform write_async for <{cmd}>')
+        for attempts in range(max_attempts):
+            try:
+                tic = time.time()
+                self.write('*CLS')
+                self.write(cmd)
+                self.write('*OPC')
+                complete = False
+                while not complete:
+                    esr = int(self.resource.query('*ESR?', delay=self.delay))
+                    if esr & 0x3C:
+                        raise Exception(f'Resource reported error code: {esr}')
+                    complete = esr & 0x01
+                    if complete:
+                        return
+                    time.sleep(delay)
+                    elapsed = time.time() - tic
+                    if timeout is not None and elapsed > timeout:
+                        raise Exception(f'Completion timeout occurred in write_async for <{cmd}>')
+            except Exception as cur_err:
+                logger.warning('Write attempt %d of %d failed for <%s>.', attempts + 1, max_attempts, cmd)
+                err = cur_err
+        raise err
 
     def query(self, cmd, container=str, max_attempts=3, dformat='ASCii,0',
               big_endian=True, chunk_size=None):
