@@ -29,9 +29,9 @@ class VisaResource:
             None
         """
         bus_address = self.bus_address
-        if self.bus_address.startswith('ASRL::AUTO'):
-            device_id = self.bus_address.split('ASRL::AUTO')[1]
-            device_id = device_id.replace('::INSTR', '')
+        # Automatically determine ASRL resource address. ASRL::AUTO::<*IDN_MATCH>::INSTR
+        if bus_address.startswith('ASRL::AUTO') and len(bus_address.split('::')) == 4:
+            device_id = bus_address.split('::')[2]
             bus_address = VisaResource.GetSerialBusAddress(device_id, baud_rate, read_term, write_term)
         self.resource = visa.ResourceManager(self.ni_backend).open_resource(bus_address)
         # self.resource.clear()
