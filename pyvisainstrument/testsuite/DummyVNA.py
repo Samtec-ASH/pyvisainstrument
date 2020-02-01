@@ -1,4 +1,5 @@
 # pylint: skip-file
+import random
 from typing import Optional, Dict
 import numpy as np
 from pyvisainstrument.testsuite.DummyTCPInstrument import DummyTCPInstrument
@@ -35,7 +36,7 @@ class DummyVNA(DummyTCPInstrument):
                     "COLLECTION": {
                         "GUIDED": {
                             "STEPS": "3",
-                            "DESCRIPTION": "Please do blah for step blah",
+                            "DESCRIPTION": self.get_ecal_description,
                             "CONNECTOR": {
                                 "PORT1": "",
                                 "PORT2": "",
@@ -194,6 +195,10 @@ class DummyVNA(DummyTCPInstrument):
 
     def reset(self, params, is_query):
         return
+
+    def get_ecal_description(self, params, is_query):
+        ports = list(np.random.permutation(range(self.num_ports))[:2])
+        return "Please connect e-cal module from port {} to port {}".format(ports[0] + 1, ports[-1] + 1)
 
     def process_command(self, cmd_tree, params, is_query):
         self.cmd_tree = cmd_tree
