@@ -22,9 +22,16 @@ class DummyDAQ(DummyTCPInstrument):
                 "OPEN": open_state,
                 "CLOSE": [],
                 "DONE": "1"
+            },
+            "MEASURE": {
+                "TEMPERATURE": "+2.12340000E+01",
+                "RHUMIDITY": "+5.00000000E+01"
             }
         }
         self.map_commands = dict(
+            MEAS='MEASURE', MEASURE='MEASURE',
+            TEMP='TEMPERATURE', TEMPERATURE='TEMPERATURE',
+            RH='RHUMIDITY', RHUMIDITY='RHUMIDITY',
             ROUT='ROUTE', ROUTE='ROUTE',
             OPEN='OPEN',
             CLOS='CLOSE', CLOSE='CLOSE',
