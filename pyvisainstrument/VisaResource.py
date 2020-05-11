@@ -32,7 +32,6 @@ class VisaResource:
             write_term (str, optional): Write termination chars
         """
         bus_address = resolve_visa_address(self.bus_address)
-
         self.resource = visa.ResourceManager(self.ni_backend).open_resource(bus_address)
         # self.resource.clear()
         self.resource.query_delay = self.delay
