@@ -31,7 +31,7 @@ class DummyDAQ(DummyTCPInstrument):
         self.map_commands = dict(
             MEAS='MEASURE', MEASURE='MEASURE',
             TEMP='TEMPERATURE', TEMPERATURE='TEMPERATURE',
-            RH='RHUMIDITY', RHUMIDITY='RHUMIDITY',
+            RHUMID='RHUMIDITY', RHUMIDITY='RHUMIDITY',
             ROUT='ROUTE', ROUTE='ROUTE',
             OPEN='OPEN',
             CLOS='CLOSE', CLOSE='CLOSE',
