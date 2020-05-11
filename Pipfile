@@ -12,7 +12,7 @@ autopep8 = "*"
 secretstorage = "*"
 
 [packages]
-pyvisa = "==1.8"
+pyvisa = "*"
 pyvisa-py = "*"
 pyserial = "*"
 pyvisainstrument = {editable = true,path = "."}

@@ -72,6 +72,12 @@ class TestKeysightDAQ:
         are_closed = [self.daq.is_channel_closed(ch) for ch in chs]
         assert all(are_open) and all(are_closed)
 
+    def test_sensor_get(self):
+        temp = self.daq.measure_temperature('FRTD', '85')
+        rh = self.daq.measure_relative_humidity('FRTD', '85')
+        assert temp >= 0 and temp <= 300
+        assert rh >= 0 and rh <= 100
+
 
 if __name__ == '__main__':
     dt = TestKeysightDAQ()

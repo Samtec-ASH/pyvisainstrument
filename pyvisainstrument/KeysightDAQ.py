@@ -1,6 +1,6 @@
 """KeysightDAQ enables controlling various Keysight DAQs."""
 from __future__ import print_function
-from typing import List, Union
+from typing import List, Optional, Union
 import time
 from pyvisainstrument.VisaResource import VisaResource
 
@@ -99,6 +99,35 @@ class KeysightDAQ(VisaResource):
         """
         self.write(f'ROUT:CLOS (@{int(channel):03d})')
         time.sleep(delay)
+
+    def measure_temperature(self, probe: str, probe_type: str, resolution: Optional[str] = None):
+        """ Reset, configure, and measure temperature.
+        Args:
+            probe: {FRTD | RTD | FTHermistor | THERmistor | TCouple | DEF}
+            probe_type:
+                For FRTD and RTD: Type 85
+                For FTHermistor and THERmistor: Type 2252, 5000, and 10,000
+                For TCouple:Type B, E, J, K, N, R, S, and T
+            resolution: Default 1 PLC
+        Returns:
+            float: temperature (°C is default unit)
+        """
+        return float(self.query(f'MEAS:TEMP? {probe},{probe_type}'))
+
+    def measure_relative_humidity(self, probe: str, probe_type: str, resolution: Optional[str] = None):
+        """ Reset, configure, and measure relative humidity.
+            NOTE: This is not a standard SCPI command for DAQs.
+        Args:
+            probe: {FRTD | RTD | FTHermistor | THERmistor | TCouple | DEF}
+            probe_type:
+                For FRTD and RTD: Type 85
+                For FTHermistor and THERmistor: Type 2252, 5000, and 10,000
+                For TCouple:Type B, E, J, K, N, R, S, and T
+            resolution: Default 1 PLC
+        Returns:
+            float: rel humidity (%)
+        """
+        return float(self.query(f'MEAS:RHumidity? {probe},{probe_type}'))
 
     def wait_for_completion(self, timeout: float = 2):
         """Wait for physical operation to complete.

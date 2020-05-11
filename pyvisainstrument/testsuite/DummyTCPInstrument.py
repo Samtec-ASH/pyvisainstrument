@@ -85,7 +85,7 @@ class DummyTCPInstrument(threading.Thread):
             self.logger.debug('RECV CMD: {0}\n'.format(cmd))
             try:
                 reply = self.process_command(cmd_tree, cmd_params, is_query)
-                if reply is not None:
+                if is_query and reply is not None:
                     reply += self.read_term
                     rdata = reply.encode()
                     self.logger.debug('SENT CMD: {0}'.format(rdata[:80]))  # First 80 chars
