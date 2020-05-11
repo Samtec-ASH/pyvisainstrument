@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "af0fa59dee0dab312c769b8965ce342bb7274d957c1e7ed4478520d8dff4b922"
+            "sha256": "73c544f5b439c602e8d9b2c44aa2c00ba9e2d6ee571a965da3d4908f65ad6125"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,6 +16,12 @@
         ]
     },
     "default": {
+        "ifaddr": {
+            "hashes": [
+                "sha256:c19c64882a7ad51a394451dabcbbed72e98b5625ec1e79789924d5ea3e3ecb93"
+            ],
+            "version": "==0.1.6"
+        },
         "numpy": {
             "hashes": [
                 "sha256:00d7b54c025601e28f468953d065b9b121ddca7fff30bed7be082d3656dd798d",
@@ -68,6 +74,14 @@
         "pyvisainstrument": {
             "editable": true,
             "path": "."
+        },
+        "zeroconf": {
+            "hashes": [
+                "sha256:51f25787c27cf7b903e6795e8763bccdaa71199f61b75af97f1bde036fa43b27",
+                "sha256:a0cdd43ee8f00e7082f784c4226d2609070ad0b2aeb34b0154466950d2134de6"
+            ],
+            "index": "pypi",
+            "version": "==0.26.1"
         }
     },
     "develop": {

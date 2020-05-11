@@ -16,6 +16,7 @@ pyvisa = "*"
 pyvisa-py = "*"
 pyserial = "*"
 pyvisainstrument = {editable = true,path = "."}
+zeroconf = "*"
 
 [requires]
 python_version = "3.7"
