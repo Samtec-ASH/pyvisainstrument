@@ -10,7 +10,8 @@ class DummyDAQ(DummyTCPInstrument):
         super(DummyDAQ, self).__init__(*args, **kwargs)
         self.num_slots = kwargs['num_slots']
         self.num_channels = kwargs['num_channels']
-        open_state = [int(f'{s:01d}{c:02d}') for s in range(1, 1 + self.num_slots)
+        self.ch_precision = kwargs.get('sc_format', 'SCC').count('C')
+        open_state = [int(f'{s:01d}{c:0{self.ch_precision}d}') for s in range(1, 1 + self.num_slots)
                       for c in range(1, 1 + self.num_channels)]
         self.state = {
             "*CLS": self.clear_status,
@@ -37,6 +38,19 @@ class DummyDAQ(DummyTCPInstrument):
             CLOS='CLOSE', CLOSE='CLOSE',
         )
 
+    def _extract_param_routes(self, param: str):
+        route_str = re.sub(r"[@\(\)]", "", param).strip()
+        route_parts = route_str.split(",")
+        route_names = []
+        for route_part in route_parts:
+            if ':' in route_part:
+                route_start = int(route_part.split(':')[0])
+                route_end = int(route_part.split(':')[1])
+                route_names += list(range(route_start, route_end + 1))
+            else:
+                route_names.append(int(route_part))
+        return route_names
+
     def clear_status(self, params, isQuery):
         return
 
@@ -45,10 +59,10 @@ class DummyDAQ(DummyTCPInstrument):
 
     def is_valid_route(self, route: int):
         route_str = str(route)
-        if len(route_str) != 3:
+        if len(route_str) <= 2:
             return False
         p = int(route_str[0])
-        c = int(route_str[1:3])
+        c = int(route_str[1:])
         num_slots = self.num_slots
         num_channels = self.num_channels
         is_valid = (p > 0) and (p <= num_slots) and (c > 0) and (c <= num_channels)
@@ -82,8 +96,7 @@ class DummyDAQ(DummyTCPInstrument):
         if is_query:
             # For rout:open? @() and rout:clos? @()
             if type(rst) == list and len(params):
-                route_str = re.sub(r"[@\(\)]", "", params[0]).strip()
-                route_names = route_str.split(",")
+                route_names = self._extract_param_routes(params[0])
                 if len(route_names) is 1:
                     reply = "1" if int(route_names[0]) in rst else "0"
                 else:
@@ -98,8 +111,7 @@ class DummyDAQ(DummyTCPInstrument):
         else:
             # For rout:open @() and rout:clos? @()
             if type(rst) is list and len(params):
-                route_str = re.sub(r"[@\(\)]", "", params[0]).strip()
-                route_names = route_str.split(",")
+                route_names = self._extract_param_routes(params[0])
                 closed = (pcmd == "CLOSE")
                 for route in route_names:
                     self.set_channel(int(route), closed)

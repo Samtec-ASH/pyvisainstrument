@@ -14,7 +14,8 @@ class TestKeysightDAQ:
         self.device = DummyDAQ(
             bus_address=instAddr,
             num_slots=3,
-            num_channels=20
+            num_channels=20,
+            sc_format='SCCC'
         )
         self.device.open()
         self.device.start()
@@ -22,7 +23,8 @@ class TestKeysightDAQ:
             bus_address=instAddr,
             num_slots=3,
             num_channels=20,
-            delay=0
+            delay=0,
+            sc_format='SCCC'
         )
         self.daq.open(read_term='\n', write_term='\n')
 
@@ -44,7 +46,7 @@ class TestKeysightDAQ:
         assert isinstance(id, str)
 
     def test_toggle_channel(self):
-        ch = int('{:01d}{:02d}'.format(randint(1, 3), randint(1, 20)))
+        ch = int('{:01d}{:03d}'.format(randint(1, 3), randint(1, 20)))
         was_open = self.daq.is_channel_open(ch)
         if was_open:
             self.daq.close_channel(ch)
@@ -54,7 +56,7 @@ class TestKeysightDAQ:
         assert was_open ^ now_open
 
     def test_toggle_entire_slot(self):
-        chs = [ch for ch in range(101, 121)]
+        chs = [ch for ch in range(1001, 1020 + 1)]
         self.daq.open_all_channels(1)
         are_open = [self.daq.is_channel_open(ch) for ch in chs]
         self.daq.close_all_channels(1)
@@ -63,7 +65,7 @@ class TestKeysightDAQ:
 
     def test_toggle_channel_set(self):
         def randCh():
-            return int('{:01d}{:02d}'.format(randint(1, 3), randint(1, 20)))
+            return int('{:01d}{:03d}'.format(randint(1, 3), randint(1, 20)))
         chs: List[Union[int, str]] = [randCh() for i in range(5)]
         self.daq.open_channels(chs)
         are_open = [self.daq.is_channel_open(ch) for ch in chs]

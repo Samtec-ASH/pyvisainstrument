@@ -6,26 +6,32 @@ from pyvisainstrument.VisaResource import VisaResource
 
 
 class KeysightDAQ(VisaResource):
-    """ KeysightDAQ enables controlling various Keysight DAQs."""
+    """ KeysightDAQ enables controlling various Keysight DAQs.
+    Args:
+        num_slots(int): Number of slots in DAQ
+        num_channels(int): Number of channels per slot
+        sc_format(str, optional): Slot+channel route format. Default is SCC
+    """
 
-    def __init__(self, num_slots: int, num_channels: int, *args, **kwargs):
+    def __init__(self, num_slots: int, num_channels: int, *args, sc_format: Optional[str] = None, **kwargs):
         super(KeysightDAQ, self).__init__(name='DAQ', *args, **kwargs)
         self.num_slots = num_slots
         self.num_channels = num_channels
+        self.ch_precision = sc_format.upper().count('C') if sc_format else 2
 
     def is_channel_closed(self, channel: Union[int, str]):
         """ Get if channel is closed.
         Args:
-            channel (int): Actuator with format SCC
+            channel (int): Actuator with format SCC[C]
         Returns:
             bool: True if channel is closed
         """
-        return self.query(f'ROUT:CLOS? (@{int(channel):03d})') == '1'
+        return self.query(f'ROUT:CLOS? (@{channel})') == '1'
 
     def is_channel_open(self, channel: Union[int, str]):
         """ Get if channel is open.
         Args:
-            channel (int): Actuator with format SCC
+            channel (int): Actuator with format SCC[C]
         Returns:
             bool: True if channel is open
         """
@@ -36,9 +42,10 @@ class KeysightDAQ(VisaResource):
         Args:
             slot int: Slot (1-based)
         """
-        for i in range(self.num_channels):
-            ch = 100 * int(slot) + (i + 1)
-            self.open_channel(ch, delay)
+        slot_start = f'{slot}{1:0{self.ch_precision}d}'
+        slot_end = f'{slot}{self.num_channels:0{self.ch_precision}d}'
+        self.write(f'ROUT:OPEN (@{slot_start}:{slot_end})')
+        time.sleep(delay)
 
     def close_all_channels(self, slot: Union[int, str], delay: float = 0):
         """ Close all channels of a slot.
@@ -48,8 +55,10 @@ class KeysightDAQ(VisaResource):
                 Delay between each channel operation.
                 Default is 0 - no delay
         """
+        # NOTE: Will continue closing one at a time due to large current draw that may result
+        # if done concurrently.
         for i in range(self.num_channels):
-            ch = 100 * int(slot) + (i + 1)
+            ch = f'{slot}{i+1:0{self.ch_precision}d}'
             self.close_channel(ch, delay)
 
     def open_channels(self, channels: List[Union[int, str]], delay: float = 0):
@@ -80,12 +89,12 @@ class KeysightDAQ(VisaResource):
         """ Open specified channel.
         Args:
             channel (Union[int, str]):
-                Channel index with format SCC
+                Channel index with format SCCc
             delay (int, optional):
                 Delay after channel operation.
                 Default is 0 - no delay
         """
-        self.write(f'ROUT:OPEN (@{int(channel):03d})')
+        self.write(f'ROUT:OPEN (@{channel})')
         time.sleep(delay)
 
     def close_channel(self, channel: Union[int, str], delay: float = 0):
@@ -97,7 +106,7 @@ class KeysightDAQ(VisaResource):
                 Delay after channel operation.
                 Default is 0 - no delay
         """
-        self.write(f'ROUT:CLOS (@{int(channel):03d})')
+        self.write(f'ROUT:CLOS (@{channel})')
         time.sleep(delay)
 
     def measure_temperature(self, probe: str, probe_type: str, resolution: Optional[str] = None):
