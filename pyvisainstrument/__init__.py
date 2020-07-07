@@ -1,7 +1,7 @@
 
 """PyVisaInstrument provides boilerplate for various NI-VISA instruments."""
 
-__version__ = "1.2.1"
+__version__ = "1.2.2"
 
 from pyvisainstrument.VisaResource import VisaResource
 from pyvisainstrument.KeysightPSU import KeysightPSU

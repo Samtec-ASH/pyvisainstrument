@@ -5,8 +5,8 @@ import re
 import socket
 import subprocess
 from subprocess import CalledProcessError
-from typing import cast
 import visa
+import zeroconf
 from zeroconf import Zeroconf
 
 
@@ -40,7 +40,7 @@ def resolve_visa_address(addr: str, read_term=None, write_term=None, baud_rate=N
     reg_str = r'([ A-z0-9._-])+.(_ssh|_http)._tcp.local'
     if re.search(reg_str, addr):
         service_name = re.search(reg_str, addr).group(0)
-        service_ip = resolve_zerconf_ip(service_name)
+        service_ip = resolve_zeroconf_ip(service_name)
         visa_addr = re.sub(reg_str, service_ip, addr)
         return visa_addr
 
@@ -58,45 +58,32 @@ def resolve_visa_address(addr: str, read_term=None, write_term=None, baud_rate=N
 
     return visa_addr
 
-# pylint: disable=too-few-public-methods
 
-
-class ZeroconfSingleton:
-    """ Zeroconf singleton as creating each time to resolve ip is costly
-        (zeroconf.close takes ~5 seconds)
-    """
-    instance = None
-
-    def __init__(self):
-        if not ZeroconfSingleton.instance:
-            ZeroconfSingleton.instance = Zeroconf()
-
-    def __getattr__(self, name):
-        return getattr(self.instance, name)
-
-
-SharedZeroconf = ZeroconfSingleton()
-
-
-def resolve_zerconf_ip(service_name: str) -> str:
+def resolve_zeroconf_ip(service_name: str) -> str:
     """ Resolve Zeroconf service IPv4 address.
     Args:
         service_name(str): Zeroconf service name
     Returns:
         str: IPv4 address
     """
+    zc = Zeroconf()
     try:
         if not service_name.endswith('.'):
             service_name += '.'
         p = service_name.split('.')
         service_type = '.'.join(p[1:])
-        info = SharedZeroconf.get_service_info(service_type, service_name)
+        info = zc.get_service_info(service_type, service_name)
         if info is None:
             raise Exception(f'Failed to resolve zerconf service {service_name}')
-        addr = socket.inet_ntoa(cast(bytes, info.address))
+        addresses = info.addresses_by_version(zeroconf.IPVersion.V4Only)
+        if len(addresses) == 0:
+            raise Exception(f'Failed to resolve zerconf service to IPv4 address {service_name}')
+        addr = socket.inet_ntoa(addresses[0])
         return addr
     except Exception as err:
         raise err
+    finally:
+        zc.close()
 
 
 def resolve_samba_ip(hostname: str) -> str:
