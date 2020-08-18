@@ -1,7 +1,7 @@
 """ KeysightVNA enables controlling various Keysight VNA/PNAs. """
 from __future__ import print_function
 import time
-from typing import Union, Optional, List
+from typing import Union, Optional, List, Tuple, Dict
 import logging
 import numpy as np
 from pyvisainstrument.VisaResource import VisaResource
@@ -455,6 +455,42 @@ class KeysightVNA(VisaResource):
                     data = data[0::2] + 1j * data[1::2]  # type: ignore
                 diff_data[:, i, j] = data
         return diff_data
+
+    def get_ecal_kit_ids(self) -> List[int]:
+        """" Get ecal kit ids connected to VNA.
+        Returns:
+            List[int]: Ids of ecal kits
+        """
+        ecal_kit_ids = [int(m) for m in str(self.query('SENS:CORR:CKIT:ECAL:LIST?')).strip().split(',')]
+        # If just single item w/ id of 0, then that means no ecals are connected
+        if len(ecal_kit_ids) == 1 and ecal_kit_ids[0] == 0:
+            ecal_kit_ids = []
+        return ecal_kit_ids
+
+    def get_ecal_kit_info(self, kit_id: int) -> Tuple[Dict[str, str], str]:
+        """ Get kit info such as:
+            * ModelNumber: str
+            * SerialNumber: str
+            * ConnectorType: str
+            * Port[A-D]Connector: str
+            * MinFreq: str[float]
+            * MaxFreq: str[float]
+            * NumberOfPoints: str[int]
+            * Calibrated: Date [DD/MM/YYYY]
+            * CharacterizedBy: str
+        Args:
+            id of kit as returned by get_ecal_kit_ids.
+        Returns:
+            Dict[str, str]: Attempt to parse info as key-value store
+            str: Raw string info read from kit
+        """
+        ecal_info = str(self.query(f'SENS:CORR:CKIT:ECAL{kit_id}:INF?'))
+        ecal_dict: Dict[str, str] = dict()
+        for r in ecal_info.replace('"', '').split(','):
+            if r.strip():
+                kv = r.split(':')
+                ecal_dict[kv[0].strip()] = kv[-1].strip()
+        return ecal_dict, ecal_info
 
     def setup_ecalibration(
             self, port_connectors: List[str],

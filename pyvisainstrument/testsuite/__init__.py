@@ -3,7 +3,7 @@
 and CI/CD. Still missing significant logic and functionality.
 """
 
-__version__ = '0.13.2'
+__version__ = '0.13.3'
 
 from pyvisainstrument.testsuite.DummyTCPInstrument import DummyTCPInstrument
 from pyvisainstrument.testsuite.DummyDAQ import DummyDAQ

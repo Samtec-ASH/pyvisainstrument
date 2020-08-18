@@ -56,7 +56,15 @@ class DummyVNA(DummyTCPInstrument):
                         }
                     },
                     "INTERPOLATE": "ON",
-                    "PREFERENCE": {"ECAL": {"ORIENTATION": "ON"}}
+                    "PREFERENCE": {"ECAL": {"ORIENTATION": "ON"}},
+                    "CKIT": {
+                        "ECAL": {
+                            "LIST": "+1"
+                        },
+                        "ECAL1": {
+                            "INF": '"ModelNumber: N4691-60006, SerialNumber: 16194, ConnectorType: 35F 35F, PortAConnector: APC 3.5 female, PortBConnector: APC 3.5 female, MinFreq: 300000, MaxFreq: 26500000000, NumberOfPoints: 583, Calibrated: 19/Sep/2018, CharacterizedBy: 15N5239932, "\n'
+                        }
+                    }
                 }
             },
             "CALCULATE": {
@@ -171,6 +179,7 @@ class DummyVNA(DummyTCPInstrument):
             THRU='THRU', STEPS='STEPS',
             SOUR='SOURCE', SOURCE='SOURCE',
             CSET='CSET', INT='INTERPOLATE',
+            COUN='COUNT', COUNT='COUNt',
             SNP='SNP'
         )
 
