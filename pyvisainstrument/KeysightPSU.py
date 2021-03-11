@@ -8,7 +8,7 @@ class KeysightPSU(VisaResource):
     """ KeysightPSU enables controlling various Keysight power supply units."""
 
     def __init__(self, *args, **kwargs):
-        super(KeysightPSU, self).__init__(name='PS', *args, **kwargs)
+        super().__init__(name='PS', *args, **kwargs)
 
     def set_channel(self, ch: Union[str, int]):
         """ Select channel for multi-channel PS.

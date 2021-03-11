@@ -2,7 +2,7 @@
 import logging
 import time
 import os
-import visa
+import pyvisa as visa
 import numpy as np
 from pyvisainstrument.utils import resolve_visa_address, get_serial_bus_address
 logger = logging.getLogger('VISA')

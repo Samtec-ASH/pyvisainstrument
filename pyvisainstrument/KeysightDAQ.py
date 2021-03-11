@@ -14,7 +14,7 @@ class KeysightDAQ(VisaResource):
     """
 
     def __init__(self, num_slots: int, num_channels: int, *args, sc_format: Optional[str] = None, **kwargs):
-        super(KeysightDAQ, self).__init__(name='DAQ', *args, **kwargs)
+        super().__init__(name='DAQ', *args, **kwargs)
         self.num_slots = num_slots
         self.num_channels = num_channels
         self.ch_precision = sc_format.upper().count('C') if sc_format else 2

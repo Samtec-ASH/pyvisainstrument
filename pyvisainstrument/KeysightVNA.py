@@ -7,14 +7,12 @@ import numpy as np
 from pyvisainstrument.VisaResource import VisaResource
 logger = logging.getLogger('VISA')
 
-# pylint: disable=too-many-public-methods
-
 
 class KeysightVNA(VisaResource):
     """ KeysightVNA enables controlling various Keysight VNA/PNAs. """
 
     def __init__(self, num_ports: int, *args, **kwargs):
-        super(KeysightVNA, self).__init__(name='VNA', *args, **kwargs)
+        super().__init__(name='VNA', *args, **kwargs)
         self.num_ports = num_ports
 
     def set_start_freq(self, freq_hz: float, channel: int = 1):
@@ -93,7 +91,7 @@ class KeysightVNA(VisaResource):
         """
         self.write(f'SENSE{channel:d}:SWEEP:POINTS {num_points:d}')
 
-    def get_number_sweep_points(self, channel: int = 1):
+    def get_number_sweep_points(self, channel: int = 1) -> int:
         """ Get number sweep points for channel.
         Args:
             channel (int): Channel number
@@ -110,7 +108,7 @@ class KeysightVNA(VisaResource):
         """
         self.write(f'SENSE{channel:d}:SWEEP:STEP {freq_hz:0.}')
 
-    def get_frequency_step_size(self, channel: int = 1):
+    def get_frequency_step_size(self, channel: int = 1) -> float:
         """ Get frequency step size
         Args:
             channel (int): Channel number
@@ -128,7 +126,7 @@ class KeysightVNA(VisaResource):
         """
         self.write(f'SENSE{channel:d}:SWEEP:TYPE {sweep_type:s}')
 
-    def get_sweep_type(self, channel: int = 1):
+    def get_sweep_type(self, channel: int = 1) -> str:
         """ Get sweep type.
         Args:
             channel (int): Channel number
@@ -145,7 +143,7 @@ class KeysightVNA(VisaResource):
         """
         self.write(f'SENSE{channel:d}:BWID {bwid}')
 
-    def get_bandwidth(self, channel: int = 1):
+    def get_bandwidth(self, channel: int = 1) -> int:
         """ Get IF bandwidth.
         Args:
             channel (int): Channel number
@@ -175,7 +173,7 @@ class KeysightVNA(VisaResource):
 
     def get_cal_sets(self, channel: int = 1) -> List[str]:
         """ Get saved cal set IDs from registry. """
-        cal_sets: str = str(self.query(f'SENSE{channel}:CORR:CSET:CAT?'))
+        cal_sets = str(self.query(f'SENSE{channel}:CORR:CSET:CAT?'))
         return cal_sets.split(',')
 
     def set_active_cal_set(
@@ -285,7 +283,7 @@ class KeysightVNA(VisaResource):
 
     def capture_ses_traces(
             self, dtype=float, trace_names: Optional[List[str]] = None, port_pairs: Optional[List[List[int]]] = None,
-            data_format: str = 'real', big_endian: bool = True):
+            data_format: str = 'real', big_endian: bool = True, sweep_mode: str = 'SINGLE'):
         """ Convenience method to capture single-ended measurement traces.
         Should be called after setup_ses_traces().
         Args:
@@ -299,7 +297,7 @@ class KeysightVNA(VisaResource):
             F - Number of sweep points
         """
         # Trigger trace and wait.
-        self.set_sweep_mode('SINGLE')
+        self.set_sweep_mode(sweep_mode)
 
         # Set data format
         self.set_data_format(data_format)
@@ -357,7 +355,8 @@ class KeysightVNA(VisaResource):
         port_pairs = [ports, ports]
         return self.setup_ses_traces(port_pairs)
 
-    def capture_snp_data(self, ports: Optional[List[int]] = None, dformat: str = 'real', big_endian: bool = True):
+    def capture_snp_data(self, ports: Optional[List[int]] = None, dformat: str = 'real', big_endian: bool = True,
+                         sweep_mode: str = 'SINGLE'):
         """ Capture SnP data for given ports in RI format.
         Args:
             ports: list of desired ports(base - 0 index)
@@ -371,7 +370,7 @@ class KeysightVNA(VisaResource):
         nports = len(ports)
 
         # Trigger trace and wait.
-        self.set_sweep_mode('SINGLE')
+        self.set_sweep_mode(sweep_mode)
 
         # Read back real,imag format
         self.set_trace_format('RI')
@@ -385,7 +384,7 @@ class KeysightVNA(VisaResource):
         )
         # Reshape 1-d array to 3-d tensor
         freq = data[:npoints]
-        sdata = np.zeros((npoints, nports, nports), dtype=np.complex)
+        sdata = np.zeros((npoints, nports, nports), dtype=complex)
         for r in range(nports):
             for c in range(nports):
                 r_idx = npoints + 2 * npoints * nports * r + 2 * npoints * c
@@ -427,7 +426,7 @@ class KeysightVNA(VisaResource):
         self.write(f'CALC1:FSIM:BAL:TOP:BBAL:PPORTS {port_list}')
         self.set_trigger_source('IMMediate')
 
-    def capture_diff_traces(self, dtype=float):
+    def capture_diff_traces(self, dtype=float, sweep_mode: str = 'SINGLE'):
         """ Convenience method to capture differential sweep traces for
         all diff s-params SDD11, SDD12, SDD21, ....
         Should be called after setupS4PTraces().
@@ -440,7 +439,7 @@ class KeysightVNA(VisaResource):
         """
         num_diff_pairs = self.num_ports // 2
         # Trigger trace and wait.
-        self.set_sweep_mode('SINGLE')
+        self.set_sweep_mode(sweep_mode)
         num_points = self.get_number_sweep_points()
         diff_data = np.zeros((num_points, num_diff_pairs, num_diff_pairs), dtype=dtype)
 
