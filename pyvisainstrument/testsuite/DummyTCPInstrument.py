@@ -79,7 +79,7 @@ class DummyTCPInstrument(threading.Thread):
             cmd_name = cmd_parts[0]
             cmd_tree = cmd_name.split(':')
             cmd_params = cmd_parts[1:] if len(cmd_parts) > 1 else []
-            is_query = cmd_tree[-1][-1] is '?'
+            is_query = cmd_tree[-1][-1] == '?'
             if is_query:
                 cmd_tree[-1] = cmd_tree[-1].rstrip('?')
             self.logger.debug('RECV CMD: {0}\n'.format(cmd))
