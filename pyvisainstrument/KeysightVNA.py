@@ -286,7 +286,8 @@ class KeysightVNA(VisaResource):
         return trace_names
 
     def capture_ses_traces(
-            self, dtype=float, trace_names: Optional[List[str]] = None, port_pairs: Optional[Tuple[List[int], List[int]]] = None,
+            self, dtype=float, trace_names: Optional[List[str]] = None,
+            port_pairs: Optional[Tuple[List[int], List[int]]] = None,
             data_format: str = 'real', big_endian: bool = True, sweep_mode: str = 'SINGLE'):
         """ Convenience method to capture single-ended measurement traces.
         Should be called after setup_ses_traces().
