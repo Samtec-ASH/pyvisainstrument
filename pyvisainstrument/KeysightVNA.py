@@ -190,6 +190,10 @@ class KeysightVNA(VisaResource):
         self.write(f'SENSE{channel}:CORR:INT {interpolate_cmd}')
         self.write_async(f'SENSE{channel}:CORR:CSET:ACT \'{cal_set}\',{stimulus_cmd}')
 
+    def deactive_active_cal_set(self, channel: int = 1):
+        """ Disable active cal set. """
+        self.write(f'SENSE{channel}:CORR:CSET:DEAC')
+
     # pylint: disable=too-many-arguments
     def setup_sweep(
             self, start_freq: float, stop_freq: float, num_points: Union[int, float],
@@ -248,7 +252,7 @@ class KeysightVNA(VisaResource):
         bits = '64' if is_64_bit else '32' if is_binary_fmt else '0'
         self.write(f'FORM:DATA {fmt},{bits}')
 
-    def setup_ses_traces(self, port_pairs: Optional[List[List[int]]] = None):
+    def setup_ses_traces(self, port_pairs: Optional[Tuple[List[int], List[int]]] = None):
         """ Convenience method to setup single - ended sweep traces.
         Should be called after setting sweep params and mode.
         Args:
@@ -282,7 +286,7 @@ class KeysightVNA(VisaResource):
         return trace_names
 
     def capture_ses_traces(
-            self, dtype=float, trace_names: Optional[List[str]] = None, port_pairs: Optional[List[List[int]]] = None,
+            self, dtype=float, trace_names: Optional[List[str]] = None, port_pairs: Optional[Tuple[List[int], List[int]]] = None,
             data_format: str = 'real', big_endian: bool = True, sweep_mode: str = 'SINGLE'):
         """ Convenience method to capture single-ended measurement traces.
         Should be called after setup_ses_traces().

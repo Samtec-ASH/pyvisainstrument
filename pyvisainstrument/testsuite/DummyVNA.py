@@ -32,7 +32,7 @@ class DummyVNA(DummyTCPInstrument):
                     "MODE": "SINGLE"
                 },
                 "CORRECTION": {
-                    "CSET": {"ACTIVATE": ""},
+                    "CSET": {"ACTIVATE": "", "DEACTIVATE": ""},
                     "COLLECTION": {
                         "GUIDED": {
                             "STEPS": "3",
@@ -123,6 +123,7 @@ class DummyVNA(DummyTCPInstrument):
             CALP='CALPOD', CALPOD='CALPOD',
             CONT='CONTROL', CONTROL='CONTROL',
             DISP='DISPLAY', DISPLAY='DISPLAY',
+            DEAC='DEACTIVATE', DEACTIVATE='DEACTIVATE',
             FORM='FORMAT', FORMAT='FORMAT',
             HCOP='HCOPY', HCOPY='HCOPY',
             INIT='INITIATE', INITIATE='INITIATE',
