@@ -18,6 +18,15 @@ class DummyVNA(DummyTCPInstrument):
             "*OPC": "1",
             "*ESR": "1",
             "SENSE": {
+                "X": {
+                    "VALUES": self._get_x_data
+                },
+                "AVERAGE": {
+                    "STATE": 1,
+                    "MODE": "SWEEP",
+                    "COUNT": 1
+                },
+                "BWIDTH": "1000",
                 "FREQUENCY": {
                     "START": "1E7",
                     "STOP": "1E9",
@@ -29,10 +38,21 @@ class DummyVNA(DummyTCPInstrument):
                     "STEP": "100",
                     "TYPE": "LINEAR",
                     "POWER": "10",
-                    "MODE": "SINGLE"
+                    "MODE": "SINGLE",
+                    "TIME": "0.1"
                 },
                 "CORRECTION": {
-                    "CSET": {"ACTIVATE": "", "DEACTIVATE": ""},
+                    "CSET": {
+                        "ACTIVATE": "",
+                        "DEACTIVATE": "",
+                        "CATALOG": "calset1,calset2",
+                        "DESCRIPTION": "A calset description.",
+                        "DATA": "1,2,3,4,5",
+                        "ETERM": "Directivity(1,1)",
+                        "NAME": "calset1",
+                        "CREATE": ""
+                    },
+                    "STATE": 1,
                     "COLLECTION": {
                         "GUIDED": {
                             "STEPS": "3",
@@ -80,9 +100,11 @@ class DummyVNA(DummyTCPInstrument):
                         "PARAMETER": {"STATE": "ON", "BBALANCED": {"DEFINE": "SDD11"}}
                     }
                 },
-                "DATA": self._get_data
+                "DATA": self._get_data,
+                "FORMAT": "MLOG"
             },
             "DISPLAY": {
+                "ENABLE": 1,
                 "WIND1": {
                     "TRAC1": {"FEED": "sdd11"},
                     "TRAC2": {"FEED": "sdd12"},
@@ -114,6 +136,18 @@ class DummyVNA(DummyTCPInstrument):
             },
             "TRIGGER": {
                 "SOURCE": "IMMediate"
+            },
+            "MMEMORY": {
+                "STORE": {
+                    "TRACE": {
+                        "FORMAT": {
+                            "SNP": "RI"
+                        }
+                    }
+                }
+            },
+            "FORMAT": {
+                "DATA": "ASCii,+0"
             }
         }
         self.map_commands = dict(
@@ -180,9 +214,32 @@ class DummyVNA(DummyTCPInstrument):
             THRU='THRU', STEPS='STEPS',
             SOUR='SOURCE', SOURCE='SOURCE',
             CSET='CSET', INT='INTERPOLATE',
-            COUN='COUNT', COUNT='COUNt',
-            SNP='SNP'
+            COUN='COUNT', COUNT='COUNT',
+            SNP='SNP',
+            BWID='BWIDTH', BWIDTH='BWIDTH',
+            BAND='BWIDTH', BANDWIDTH='BWIDTH',
+            ETERM="ETERM", ETER="ETERM",
+            WIND='WINDOW', WINDOW='WINDOW',
+            TRAC='TRACE', TRACE='TRACE',
+            STOR='STORE', STORE='STORE',
+            AVER='AVERAGE', AVERAGE='AVERAGE',
+            CRE='CREATE', CREATE='CREATE',
+            ENAB='ENABLE', ENABLE='ENABLE',
         )
+
+    def _get_x_data(self, params, is_query):
+        if is_query:
+            num_points = int(self.state["SENSE"]["SWEEP"]["POINTS"])
+            s_type = self.state["SENSE"]["SWEEP"]["TYPE"]
+            f_start = int(self.state["SENSE"]["FREQUENCY"]["START"])
+            f_stop = int(self.state["SENSE"]["FREQUENCY"]["STOP"])
+            if s_type.upper().startswith('LIN'):
+                data = np.linspace(f_start, f_stop, num_points)
+            elif s_type.upper().startswith('LOG'):
+                data = np.logspace(f_start, f_stop, num_points)
+            else:
+                data = np.linspace(f_start, f_stop, num_points)
+            return ",".join('{:+.6E}'.format(v) for v in data)
 
     def _get_data(self, params, is_query):
         if is_query:

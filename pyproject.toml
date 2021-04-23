@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "PyVisaInstrument"
-version = "1.4.0"
+version = "1.5.0"
 description = "PyVisaInstrument provides boilerplate for various NI-VISA instruments."
 authors = ["Adam Page <adam.page@samtec.com>"]
 license = "MIT"
@@ -21,6 +21,7 @@ pep8 = "^1.7.1"
 pylint = "^2.6.0"
 autopep8 = "^1.5.4"
 flake8 = "^3.8.4"
+ipython = "^7.22.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

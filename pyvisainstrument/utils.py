@@ -165,3 +165,18 @@ def get_serial_bus_address(device_id, baud_rate=None, read_term=None, write_term
         f'Please verify device is powered, connected, and not already in use. '
         f'Available devices: {filt_resource_names}. '
     ))
+
+
+def is_binary_format(dformat: str) -> bool:
+    ''' Check if data format is binary. '''
+    return dformat.upper().startswith('REAL')
+
+
+def is_ascii_format(dformat: str) -> bool:
+    ''' Check if data format is ascii. '''
+    return dformat.upper().startswith('ASC')
+
+
+def get_binary_datatype(dformat: str) -> str:
+    ''' Get datatype for binary data format. '''
+    return 'd' if '64' in dformat else 'f'
