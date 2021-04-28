@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "PyVisaInstrument"
+version = "1.5.1"
+description = "PyVisaInstrument provides boilerplate for various NI-VISA instruments."
+authors = ["Adam Page <adam.page@samtec.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/Samtec-ASH/pyvisainstrument"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+PyVISA = "^1.11.3"
+PyVISA-py = "^0.5.2"
+pyserial = "^3.5"
+zeroconf = "^0.28.8"
+numpy = "^1.20.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.1"
+pep8 = "^1.7.1"
+pylint = "^2.6.0"
+autopep8 = "^1.5.4"
+flake8 = "^3.8.4"
+ipython = "^7.22.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -5,7 +5,7 @@ import re
 import socket
 import subprocess
 from subprocess import CalledProcessError
-import visa
+import pyvisa as visa
 import zeroconf
 from zeroconf import Zeroconf
 
@@ -74,10 +74,10 @@ def resolve_zeroconf_ip(service_name: str) -> str:
         service_type = '.'.join(p[1:])
         info = zc.get_service_info(service_type, service_name)
         if info is None:
-            raise Exception(f'Failed to resolve zerconf service {service_name}')
+            raise Exception(f'Failed to resolve zeroconf service {service_name}')
         addresses = info.addresses_by_version(zeroconf.IPVersion.V4Only)
         if len(addresses) == 0:
-            raise Exception(f'Failed to resolve zerconf service to IPv4 address {service_name}')
+            raise Exception(f'Failed to resolve zeroconf service to IPv4 address {service_name}')
         addr = socket.inet_ntoa(addresses[0])
         return addr
     except Exception as err:
@@ -109,7 +109,7 @@ def resolve_samba_ip(hostname: str) -> str:
         return address
     except CalledProcessError as err:
         if err.returncode == 68:
-            raise Exception(f'Failed to resolve SAMBA service {hostname}')
+            raise Exception(f'Failed to resolve SAMBA service {hostname}') from err
         raise err
     return hostname
 
@@ -165,3 +165,18 @@ def get_serial_bus_address(device_id, baud_rate=None, read_term=None, write_term
         f'Please verify device is powered, connected, and not already in use. '
         f'Available devices: {filt_resource_names}. '
     ))
+
+
+def is_binary_format(dformat: str) -> bool:
+    ''' Check if data format is binary. '''
+    return dformat.upper().startswith('REAL')
+
+
+def is_ascii_format(dformat: str) -> bool:
+    ''' Check if data format is ascii. '''
+    return dformat.upper().startswith('ASC')
+
+
+def get_binary_datatype(dformat: str) -> str:
+    ''' Get datatype for binary data format. '''
+    return 'd' if '64' in dformat else 'f'

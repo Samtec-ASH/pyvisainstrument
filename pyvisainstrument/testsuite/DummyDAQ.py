@@ -97,7 +97,7 @@ class DummyDAQ(DummyTCPInstrument):
             # For rout:open? @() and rout:clos? @()
             if type(rst) == list and len(params):
                 route_names = self._extract_param_routes(params[0])
-                if len(route_names) is 1:
+                if len(route_names) == 1:
                     reply = "1" if int(route_names[0]) in rst else "0"
                 else:
                     reply = ','.join(["1" if r in rst else "0" for r in route_names])

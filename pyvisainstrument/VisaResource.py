@@ -2,7 +2,7 @@
 import logging
 import time
 import os
-import visa
+import pyvisa as visa
 import numpy as np
 from pyvisainstrument.utils import resolve_visa_address, get_serial_bus_address
 logger = logging.getLogger('VISA')
@@ -22,7 +22,7 @@ class VisaResource:
     @property
     def ni_backend(self) -> str:
         """ Get NI VISA backend. """
-        return os.getenv('NI_VISA_PATH', '@ni')
+        return os.getenv('NI_VISA_PATH', '@ivi')
 
     def open(self, read_term=None, write_term=None, baud_rate=None):
         """Open instrument connection.
@@ -56,7 +56,7 @@ class VisaResource:
         self.resource = None
         self.is_open = False
 
-    def write(self, cmd):
+    def write(self, cmd: str):
         """Perform raw SCPI write
         Args:
             cmd (str): SCPI command
@@ -124,8 +124,7 @@ class VisaResource:
             complete = esr & 0x01
             time.sleep(delay)
 
-    def query(self, cmd, container=str, max_attempts=3, dformat='ASCii,0',
-              big_endian=True, chunk_size=None):
+    def query(self, cmd, container=str, max_attempts=3, dformat='ASCii,0', big_endian=True, chunk_size=None):
         """ Perform raw SCPI query with retries
         Args:
             cmd (str): SCPI query
@@ -140,7 +139,7 @@ class VisaResource:
         for attempts in range(max_attempts):
             try:
                 # Special case for arrays
-                if container in [np.ndarray, np.array, list]:
+                if container in (np.ndarray, np.array, list):
                     if dformat.upper().startswith('REAL'):
                         datatype = 'd' if '64' in dformat else 'f'
                         rst = self.resource.query_binary_values(
@@ -156,7 +155,7 @@ class VisaResource:
                     if self.verbose:
                         logger.debug('%s:QUERY %s -> %s', self.name, cmd, rst)
                     if container is bool:
-                        rst = rst.lower() not in ['0', 'false', 'no']
+                        rst = rst.lower() not in ['0', 'false', 'no', '+0']
                     else:
                         rst = container(rst)
                 return rst
@@ -167,6 +166,48 @@ class VisaResource:
                     attempts + 1, max_attempts, cmd
                 )
                 err = curErr
+        raise err
+
+    def query_ascii_values(self, **kwargs):
+        ''' Wraps resource query_ascii_values with ability for retries '''
+        max_attempts = kwargs.get('max_attempts', 3)
+        if 'max_attempts' in kwargs:
+            del kwargs['max_attempts']
+
+        if not self.is_open:
+            raise Exception("Visa resource not open")
+
+        err = Exception('Failed to perform query_ascii_values')
+        for attempts in range(max_attempts):
+            try:
+                if self.verbose:
+                    logger.debug('%s:QUERY ASCII VALUES %s', self.name, kwargs.get('message', ''))
+                return self.resource.query_ascii_values(**kwargs)
+            # pylint: disable=broad-except
+            except Exception as cur_err:
+                logger.warning('Query ascii values attempt %d of %d failed.', attempts + 1, max_attempts)
+                err = cur_err
+        raise err
+
+    def query_binary_values(self, **kwargs):
+        ''' Wraps resource query_ascii_values with ability for retries '''
+        max_attempts = kwargs.get('max_attempts', 3)
+        if 'max_attempts' in kwargs:
+            del kwargs['max_attempts']
+
+        if not self.is_open:
+            raise Exception("Visa resource not open")
+
+        err = Exception('Failed to perform query_ascii_values')
+        for attempts in range(max_attempts):
+            try:
+                if self.verbose:
+                    logger.debug('%s:QUERY BINARY VALUES %s', self.name, kwargs.get('message', ''))
+                return self.resource.query_binary_values(**kwargs)
+            # pylint: disable=broad-except
+            except Exception as cur_err:
+                logger.warning('Query ascii values attempt %d of %d failed.', attempts + 1, max_attempts)
+                err = cur_err
         raise err
 
     def read(self):

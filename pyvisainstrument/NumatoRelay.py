@@ -10,7 +10,7 @@ class NumatoRelay(KeysightDAQ):
     """NumatoRelay is a convenience class to control various Numato Lab Relay Modules."""
 
     def __init__(self, *args, **kwargs):
-        super(NumatoRelay, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # bus_address is formated like GPIB device DEVICE_TYPE::ADDRESS
         # such as TCP::127.0.0.0 or USB::/dev/ttyACMO
         bus_address = kwargs.get('bus_address')

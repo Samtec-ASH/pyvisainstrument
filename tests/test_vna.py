@@ -34,7 +34,7 @@ class TestKeysightVNA:
         id = self.vna.get_id()
         assert isinstance(id, str)
 
-    def test_setSweep(self):
+    def test_set_sweep(self):
         self.vna.setup_sweep(
             1E7,
             2E10,
@@ -47,9 +47,9 @@ class TestKeysightVNA:
         sweep_points = self.vna.get_number_sweep_points()
         sweep_type = self.vna.get_sweep_type()
         port_pairs = [[0, 1, 2, 3], [0, 1, 2, 3]]
-        traceNames = self.vna.setup_ses_traces(port_pairs=port_pairs)
+        _ = self.vna.setup_ses_traces(port_pairs=port_pairs)
         # sData = self.vna.captureSESTrace(dtype=complex, portPairs=portPairs)
-        freq, sData = self.vna.capture_snp_data(ports=[0, 1, 2, 3], dformat='ascii')
+        _, sData = self.vna.capture_snp_data(ports=port_pairs[0])
         print(sData.shape)
         assert start_freq == 1E7
         assert stop_freq == 2E10

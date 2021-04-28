@@ -1,4 +1,4 @@
-## PyVisaInstrument
+# PyVisaInstrument
 
 ![PyPI](https://img.shields.io/pypi/v/pyvisainstrument)
 
@@ -9,9 +9,9 @@ Provides boilerplate for various NI-VISA instruments and utilizes pyvisa.
 - KeysightPSU
 - NumatoRelay (TCP/TELNET and USB)
 
-### Installation:
+## Installation
 
-pip install -U pyvisainstrument
+pip install pyvisainstrument
 
 ## Contributing
 

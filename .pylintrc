@@ -6,3 +6,6 @@ disable=invalid-name,unused-argument,too-many-branches,too-many-locals,too-many-
 
 [FORMAT]
 max-line-length=120
+
+[DESIGN]
+max-args=10
