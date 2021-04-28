@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "PyVisaInstrument"
-version = "1.5.0"
+version = "1.5.1"
 description = "PyVisaInstrument provides boilerplate for various NI-VISA instruments."
 authors = ["Adam Page <adam.page@samtec.com>"]
 license = "MIT"

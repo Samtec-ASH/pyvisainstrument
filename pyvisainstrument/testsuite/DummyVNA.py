@@ -29,13 +29,13 @@ class DummyVNA(DummyTCPInstrument):
                 "BWIDTH": "1000",
                 "FREQUENCY": {
                     "START": "1E7",
-                    "STOP": "1E9",
+                    "STOP": "2E10",
                     "CENTER": "5E8",
                     "CW": "5E8"
                 },
                 "SWEEP": {
-                    "POINTS": "100",
-                    "STEP": "100",
+                    "POINTS": "2000",
+                    "STEP": "1E7",
                     "TYPE": "LINEAR",
                     "POWER": "10",
                     "MODE": "SINGLE",
@@ -229,10 +229,10 @@ class DummyVNA(DummyTCPInstrument):
 
     def _get_x_data(self, params, is_query):
         if is_query:
-            num_points = int(self.state["SENSE"]["SWEEP"]["POINTS"])
+            num_points = int(float(self.state["SENSE"]["SWEEP"]["POINTS"]))
             s_type = self.state["SENSE"]["SWEEP"]["TYPE"]
-            f_start = int(self.state["SENSE"]["FREQUENCY"]["START"])
-            f_stop = int(self.state["SENSE"]["FREQUENCY"]["STOP"])
+            f_start = float(self.state["SENSE"]["FREQUENCY"]["START"])
+            f_stop = float(self.state["SENSE"]["FREQUENCY"]["STOP"])
             if s_type.upper().startswith('LIN'):
                 data = np.linspace(f_start, f_stop, num_points)
             elif s_type.upper().startswith('LOG'):
@@ -243,7 +243,7 @@ class DummyVNA(DummyTCPInstrument):
 
     def _get_data(self, params, is_query):
         if is_query:
-            num_points = int(self.state["SENSE"]["SWEEP"]["POINTS"])
+            num_points = int(float(self.state["SENSE"]["SWEEP"]["POINTS"]))
             # CALC:DATA:SNP:PORTs 1,2,3,4?
             if self.cmd_tree and 'SNP' in self.cmd_tree:
                 nports = len(params[0].split(',')) if len(params) else self.num_ports
